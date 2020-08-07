@@ -10,7 +10,7 @@ cvek_test(
   kern_func_list,
   data,
   test = "boot",
-  alt_kernel_type = "linear",
+  alt_kernel_type = "ensemble",
   B = 100,
   verbose = FALSE
 )

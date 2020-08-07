@@ -202,7 +202,7 @@ cvek_test <- function(est_res,
                       alt_kernel_type = "ensemble",
                       B = 100,
                       verbose = FALSE) {
-  # TODO: generalize to allow ensemble effect kernels.
+  
   alt_kernel_type <-
     match.arg(alt_kernel_type, c("linear", "ensemble"))
   
@@ -423,7 +423,6 @@ parse_cvek_formula <-
     }
     
     # combine and return
-    # TODO (jereliu): discuss whether to add standardization
     list(y = response_vector,
          X = fixed_effect_matrix,
          K = kernel_effect_matrix_list)

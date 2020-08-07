@@ -14,7 +14,7 @@ cvek(
   beta_exp = 1,
   lambda = exp(seq(-10, 5)),
   test = "boot",
-  alt_kernel_type = "linear",
+  alt_kernel_type = "ensemble",
   B = 100,
   verbose = FALSE
 )
@@ -109,8 +109,7 @@ data$y <- as.matrix(cbind(1, data[, c("x1", "x2")])) \%*\% beta_true +
 
 formula_test <- y ~ k(x1):k(x4, x6)
 pvalue <- cvek(formula, kern_func_list = kern_func_list, 
-               data = data, formula_test = formula_test, 
-               alt_kernel_type = "ensemble", B = 200)$pvalue
+               data = data, formula_test = formula_test)$pvalue
 
 }
 \references{

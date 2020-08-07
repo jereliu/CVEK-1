@@ -49,7 +49,7 @@
 #'
 #' @export generate_kernel
 #'
-#' @import mvtnorm MASS limSolve stats
+#' @import MASS limSolve stats
 
 generate_kernel <-
   function(method = "rbf", l = 1, p = 2, sigma = 1) {
