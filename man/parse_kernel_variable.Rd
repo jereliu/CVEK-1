@@ -2,7 +2,7 @@
 % Please edit documentation in R/interface.R
 \name{parse_kernel_variable}
 \alias{parse_kernel_variable}
-\title{Creates kernel matrix for each variable in the formula}
+\title{Create Kernel Matrix}
 \usage{
 parse_kernel_variable(kern_var_name, kern_func, data, data_new = NULL)
 }
@@ -13,19 +13,20 @@ create the kernel matrix from. Must be a single term that is either of the form
 contain multiple variables).}
 
 \item{kern_func}{(function) A kernel function. Will be overwritten to linear
-kernel if the variable doesn't contain 'k()'}
+kernel if the variable doesn't contain 'k()'.}
 
-\item{data}{(data.frame, n*d) a data.frame, list or environment (or object
+\item{data}{(data.frame, n*d) A data.frame, list or environment (or object
 coercible by as.data.frame to a data.frame), containing the variables in
 formula. Neither a matrix nor an array will be accepted.}
 
-\item{data_new}{(data.frame, n_new*d) new data for computing predictions.}
+\item{data_new}{(data.frame, n_new*d) New data for computing predictions.}
 }
 \value{
-The n*n kernel matrix corresponding to the variable being computed.
+\item{kernel_mat}{(matrix, n*n) The kernel matrix corresponding to 
+the variable being computed.}
 }
 \description{
-Creates kernel matrix for each variable in the formula
+Create kernel matrix for each variable in the formula.
 }
 \author{
 Jeremiah Zhe Liu

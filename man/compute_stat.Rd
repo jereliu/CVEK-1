@@ -7,16 +7,16 @@
 compute_stat(Y, K_int, y_fixed, K0, sigma2_hat, tau_hat)
 }
 \arguments{
-\item{Y}{(vector of length n) Reponses of the dataframe.}
+\item{Y}{(matrix, n*1) The vector of response variable.}
 
 \item{K_int}{(matrix, n*n) The kernel matrix to be tested.}
 
-\item{y_fixed}{(vector of length n) Estimated fixed effects of the
-responses.}
+\item{y_fixed}{(vector of length n) Estimated fixed effect of the
+response.}
 
-\item{sigma2_hat}{(numeric) The estimated noise of the fixed effects.}
+\item{sigma2_hat}{(numeric) The estimated noise of the fixed effect.}
 
-\item{tau_hat}{(numeric) The estimated noise of the random effects.}
+\item{tau_hat}{(numeric) The estimated noise of the kernel effect.}
 
 \item{K_0}{(matrix, n*n) Estimated ensemble kernel matrix.}
 }

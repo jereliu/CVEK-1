@@ -4,16 +4,18 @@
 \alias{predict.cvek}
 \title{Predicting New Response}
 \usage{
-\method{predict}{cvek}(object, data_new)
+\method{predict}{cvek}(object, newdata, ...)
 }
 \arguments{
-\item{object}{(list) Estimation results returned by estimation() procedure.}
+\item{object}{(list) Estimation results returned by cvek() procedure.}
 
-\item{data_new}{(dataframe) The new set of predictors, whose name is 
-the same as those of formula estimation().}
+\item{newdata}{(dataframe) The new set of predictors, whose name is 
+the same as those of formula in cvek().}
+
+\item{...}{Further arguments passed to or from other methods.}
 }
 \value{
-\item{y_pred}{(vector of length n) Predicted new response.}
+\item{y_pred}{(matrix, n*1) Predicted new response.}
 }
 \description{
 Predicting new response based on given design matrix and 
@@ -21,6 +23,51 @@ the estimation result.
 }
 \details{
 After we obtain the estimation result, we can predict new response.
+}
+\examples{
+
+kern_par <- data.frame(method = rep("rbf", 3),
+l = rep(3, 3), p = rep(2, 3), 
+stringsAsFactors = FALSE)
+# define kernel library
+kern_func_list <- define_library(kern_par)
+
+n <- 100
+d <- 4
+formula <- y ~ x1 + x2 + k(x3, x4)
+formula_test <- y ~ k(x1, x2) * k(x3, x4)
+data <- as.data.frame(matrix(
+  rnorm(n * d),
+  ncol = d,
+  dimnames = list(NULL, paste0("x", 1:d))
+))
+beta_true <- c(1, .41, 2.37)
+lnr_kern_func <- generate_kernel(method = "rbf", l = 3)
+kern_effect_lnr <-
+  parse_kernel_variable("k(x3, x4)", lnr_kern_func, data)
+alpha_lnr_true <- rnorm(n)
+
+data$y <- as.matrix(cbind(1, data[, c("x1", "x2")])) \%*\% beta_true +
+  kern_effect_lnr \%*\% alpha_lnr_true
+
+data_train <- data[1:50, ]
+data_test <- data[51:100, ]
+
+result <- cvek(formula,
+               kern_func_list,
+               data_train,
+               formula_test,
+               mode = "loocv",
+               strategy = "stack",
+               beta_exp = 1,
+               lambda = exp(seq(-10, 5)),
+               test = "boot",
+               alt_kernel_type = "linear",
+               B = 100,
+               verbose = FALSE)
+
+predict(result, data_test)
+
 }
 \author{
 Wenying Deng

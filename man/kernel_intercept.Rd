@@ -4,14 +4,16 @@
 \alias{kernel_intercept}
 \title{Generating A Single Matrix-wise Function Using Intercept}
 \usage{
-kernel_intercept(l, d)
+kernel_intercept(l, p, sigma)
 }
 \arguments{
 \item{l}{(numeric) A numeric number indicating the hyperparameter
 (flexibility) of a specific kernel.}
 
-\item{d}{(integer) For polynomial, d is the power; for matern, v = d + 1 /
-2; for rational, alpha = d.}
+\item{p}{(integer) For polynomial, p is the power; for matern, v = p + 1 /
+2; for rational, alpha = p.}
+
+\item{sigma}{(numeric) The covariance coefficient for neural network kernel.}
 }
 \value{
 \item{matrix_wise}{(function) A function calculating the relevance
@@ -21,8 +23,8 @@ of two matrices.}
 Generate matrix-wise functions for two matrices using intercept kernel.
 }
 \details{
-\bold{Polynomial Kernels} \deqn{k(x, x')=(x \cdot x')^d} We have intercept
-kernel when \eqn{d=0}, and linear kernel when \eqn{d=1}.
+\bold{Polynomial Kernels} \deqn{k(x, x')=(x \cdot x')^p} We have intercept
+kernel when \eqn{p=0}, and linear kernel when \eqn{p=1}.
 }
 \references{
 The MIT Press. Gaussian Processes for Machine Learning, 2006.

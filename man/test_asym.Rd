@@ -4,27 +4,26 @@
 \alias{test_asym}
 \title{Conducting Score Tests for Interaction Using Asymptotic Test}
 \usage{
-test_asym(Y, X, K_int, y_fixed, alpha0, K_ens, sigma2_hat, tau_hat, B)
+test_asym(Y, X, y_fixed, alpha0, K_ens, K_int, sigma2_hat, tau_hat, B)
 }
 \arguments{
-\item{Y}{(vector of length n) Reponses of the dataframe.}
+\item{Y}{(matrix, n*1) The vector of response variable.}
 
-\item{X}{(dataframe, n*p) Fixed effects variables in the dataframe (could
-contains several subfactors).}
+\item{X}{(matrix, n*d_fix) The fixed effect matrix.}
 
-\item{K_int}{(matrix, n*n) The kernel matrix to be tested.}
+\item{y_fixed}{(vector of length n) Estimated fixed effect of the
+response.}
 
-\item{y_fixed}{(vector of length n) Estimated fixed effects of the
-responses.}
-
-\item{alpha0}{(vector of length n) Random effects estimator of the estimated
+\item{alpha0}{(vector of length n) Kernel effect estimator of the estimated
 ensemble kernel matrix.}
 
 \item{K_ens}{(matrix, n*n) Estimated ensemble kernel matrix.}
 
-\item{sigma2_hat}{(numeric) The estimated noise of the fixed effects.}
+\item{K_int}{(matrix, n*n) The kernel matrix to be tested.}
 
-\item{tau_hat}{(numeric) The estimated noise of the random effects.}
+\item{sigma2_hat}{(numeric) The estimated noise of the fixed effect.}
+
+\item{tau_hat}{(numeric) The estimated noise of the kernel effect.}
 
 \item{B}{(integer) A numeric value indicating times of resampling when test
 = "boot".}

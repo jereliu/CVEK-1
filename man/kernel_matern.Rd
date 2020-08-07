@@ -4,14 +4,16 @@
 \alias{kernel_matern}
 \title{Generating A Single Matrix-wise Function Using Matern}
 \usage{
-kernel_matern(l, d)
+kernel_matern(l, p, sigma)
 }
 \arguments{
 \item{l}{(numeric) A numeric number indicating the hyperparameter
 (flexibility) of a specific kernel.}
 
-\item{d}{(integer) For polynomial, d is the power; for matern, v = d + 1 /
-2; for rational, alpha = d.}
+\item{p}{(integer) For polynomial, p is the power; for matern, v = p + 1 /
+2; for rational, alpha = p.}
+
+\item{sigma}{(numeric) The covariance coefficient for neural network kernel.}
 }
 \value{
 \item{matrix_wise}{(function) A function calculating the relevance

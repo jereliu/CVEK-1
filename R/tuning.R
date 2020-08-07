@@ -16,7 +16,7 @@
 #' \deqn{\lambda_{AIC}=\underset{\lambda \in \Lambda}{argmin}\Big\{log\;
 #' y^{\star T}(I-A_\lambda)^2y^\star+\frac{2[tr(A_\lambda)+2]}{n}\Big\}}
 #' 
-#' \bold{Akaike Information Criteria (small sample size)}
+#' \bold{Akaike Information Criteria (small-sample variant)}
 #' 
 #' \deqn{\lambda_{AICc}=\underset{\lambda \in \Lambda}{argmin}\Big\{log\;
 #' y^{\star
@@ -33,7 +33,7 @@
 #' y^{\star
 #' T}(I-A_\lambda)^2y^\star-2log[1-\frac{tr(A_\lambda)}{n}-\frac{1}{n}]_+\Big\}}
 #' 
-#' \bold{Generalized Cross Validation (small sample size)}
+#' \bold{Generalized Cross Validation (small-sample variant)}
 #' 
 #' \deqn{\lambda_{GCVc}=\underset{\lambda \in \Lambda}{argmin}\Big\{log\;
 #' y^{\star
@@ -45,15 +45,16 @@
 #' y^{\star T}(I-A_\lambda)y^\star-\frac{1}{n-1}log \mid I-A_\lambda \mid
 #' \Big\}}
 #' 
-#' @param Y (vector of length n) Reponses of the dataframe.
-#' @param X (dataframe, n*p) Fixed effects variables in the dataframe (could
-#' contains several subfactors).
-#' @param K_mat (matrix, n*n) Estimated ensemble kernel matrix.
+#' @param Y (matrix, n*1) The vector of response variable.
+#' @param X (matrix, n*d_fix) The fixed effect matrix.
+#' @param K_mat (list of matrices) A nested list of kernel term matrices, 
+#' corresponding to each kernel term specified in the formula for 
+#' a base kernel function in kern_func_list.
 #' @param mode (character) A character string indicating which tuning parameter
 #' criteria is to be used.
-#' @param lambda (numeric) A numeric string specifying the range of tuning parameter 
-#' to be chosen. The lower limit of lambda must be above 0.
-#' @return \item{lambda0}{(numeric) The estimated tuning parameter.}
+#' @param lambda (numeric) A numeric string specifying the range of tuning 
+#' parameter to be chosen. The lower limit of lambda must be above 0.
+#' @return \item{lambda0}{(numeric) The selected tuning parameter.}
 #' @author Wenying Deng
 #' @references Philip S. Boonstra, Bhramar Mukherjee, and Jeremy M. G. Taylor.
 #' A Small-Sample Choice of the Tuning Parameter in Ridge Regression. July
@@ -74,20 +75,10 @@
 #' Hurvich Clifford M., Simonoff Jeffrey S., and Tsai Chih-Ling. Smoothing
 #' parameter selection in nonparametric regression using an improved Akaike
 #' information criterion. January 2002.
-#' @examples
-#' 
-#' 
-#' 
-#' lambda0 <- tuning(Y = CVEK:::model_matrices$y, 
-#' X = CVEK:::model_matrices$X, K_mat = CVEK:::K_ens, 
-#' mode = "loocv", lambda = exp(seq(-10, 5)))
-#' 
-#' 
 #' 
 #' @export tuning
-tuning <-
-  function(Y, X, K_mat, mode, lambda) {
-    
+tuning <- function(Y, X, K_mat, mode, lambda) {
+  
     mode <- match.arg(mode, c("AIC", "AICc", "BIC", "GCV", "GCVc", "gmpml", "loocv"))
     func_name <- paste0("tuning_", mode)
     lambda_selected <- do.call(func_name, 
@@ -112,10 +103,11 @@ tuning <-
 #' \deqn{\lambda_{AIC}=\underset{\lambda \in \Lambda}{argmin}\Big\{log\;
 #' y^{\star T}(I-A_\lambda)^2y^\star+\frac{2[tr(A_\lambda)+2]}{n}\Big\}}
 #' 
-#' @param Y (vector of length n) Reponses of the dataframe.
-#' @param X (dataframe, n*p) Fixed effects variables in the dataframe (could
-#' contains several subfactors).
-#' @param K_mat (matrix, n*n) Estimated ensemble kernel matrix.
+#' @param Y (matrix, n*1) The vector of response variable.
+#' @param X (matrix, n*d_fix) The fixed effect matrix.
+#' @param K_mat (list of matrices) A nested list of kernel term matrices, 
+#' corresponding to each kernel term specified in the formula for 
+#' a base kernel function in kern_func_list.
 #' @param lambda (numeric) A numeric string specifying the range of tuning parameter 
 #' to be chosen. The lower limit of lambda must be above 0.
 #' @return \item{lambda0}{(numeric) The estimated tuning parameter.}
@@ -148,8 +140,9 @@ tuning_AIC <-
       proj_matrix <- 
         estimate_ridge(Y = Y, X = X, K = K_mat, lambda = k)$proj_matrix
       A <- proj_matrix$total
+      trace_A <- sum(diag(A))
       log(t(Y) %*% (diag(n) - A) %*% (diag(n) - A) %*% Y) +
-        2 * (tr(A) + 2) / n
+        2 * (trace_A + 2) / n
     })
     
     lambda[which(CV == min(CV))]
@@ -168,10 +161,11 @@ tuning_AIC <-
 #' y^{\star
 #' T}(I-A_\lambda)^2y^\star+\frac{2[tr(A_\lambda)+2]}{n-tr(A_\lambda)-3}\Big\}}
 #' 
-#' @param Y (vector of length n) Reponses of the dataframe.
-#' @param X (dataframe, n*p) Fixed effects variables in the dataframe (could
-#' contains several subfactors).
-#' @param K_mat (matrix, n*n) Estimated ensemble kernel matrix.
+#' @param Y (matrix, n*1) The vector of response variable.
+#' @param X (matrix, n*d_fix) The fixed effect matrix.
+#' @param K_mat (list of matrices) A nested list of kernel term matrices, 
+#' corresponding to each kernel term specified in the formula for 
+#' a base kernel function in kern_func_list.
 #' @param lambda (numeric) A numeric string specifying the range of tuning parameter 
 #' to be chosen. The lower limit of lambda must be above 0.
 #' @return \item{lambda0}{(numeric) The estimated tuning parameter.}
@@ -204,8 +198,9 @@ tuning_AICc <-
       proj_matrix <- 
         estimate_ridge(Y = Y, X = X, K = K_mat, lambda = k)$proj_matrix
       A <- proj_matrix$total
+      trace_A <- sum(diag(A))
       log(t(Y) %*% (diag(n) - A) %*% (diag(n) - A) %*% Y) +
-        2 * (tr(A) + 2) / (n - tr(A) - 3)
+        2 * (trace_A + 2) / (n - trace_A - 3)
     })
     
     lambda[which(CV == min(CV))]
@@ -223,10 +218,11 @@ tuning_AICc <-
 #' \deqn{\lambda_{BIC}=\underset{\lambda \in \Lambda}{argmin}\Big\{log\;
 #' y^{\star T}(I-A_\lambda)^2y^\star+\frac{log(n)[tr(A_\lambda)+2]}{n}\Big\}}
 #' 
-#' @param Y (vector of length n) Reponses of the dataframe.
-#' @param X (dataframe, n*p) Fixed effects variables in the dataframe (could
-#' contains several subfactors).
-#' @param K_mat (matrix, n*n) Estimated ensemble kernel matrix.
+#' @param Y (matrix, n*1) The vector of response variable.
+#' @param X (matrix, n*d_fix) The fixed effect matrix.
+#' @param K_mat (list of matrices) A nested list of kernel term matrices, 
+#' corresponding to each kernel term specified in the formula for 
+#' a base kernel function in kern_func_list.
 #' @param lambda (numeric) A numeric string specifying the range of tuning parameter 
 #' to be chosen. The lower limit of lambda must be above 0.
 #' @return \item{lambda0}{(numeric) The estimated tuning parameter.}
@@ -259,8 +255,9 @@ tuning_BIC <-
       proj_matrix <- 
         estimate_ridge(Y = Y, X = X, K = K_mat, lambda = k)$proj_matrix
       A <- proj_matrix$total
+      trace_A <- sum(diag(A))
       log(t(Y) %*% (diag(n) - A) %*% (diag(n) - A) %*% Y) +
-        log(n) * (tr(A) + 2) / n
+        log(n) * (trace_A + 2) / n
     })
     
     lambda[which(CV == min(CV))]
@@ -279,10 +276,11 @@ tuning_BIC <-
 #' y^{\star
 #' T}(I-A_\lambda)^2y^\star-2log[1-\frac{tr(A_\lambda)}{n}-\frac{1}{n}]_+\Big\}}
 #' 
-#' @param Y (vector of length n) Reponses of the dataframe.
-#' @param X (dataframe, n*p) Fixed effects variables in the dataframe (could
-#' contains several subfactors).
-#' @param K_mat (matrix, n*n) Estimated ensemble kernel matrix.
+#' @param Y (matrix, n*1) The vector of response variable.
+#' @param X (matrix, n*d_fix) The fixed effect matrix.
+#' @param K_mat (list of matrices) A nested list of kernel term matrices, 
+#' corresponding to each kernel term specified in the formula for 
+#' a base kernel function in kern_func_list.
 #' @param lambda (numeric) A numeric string specifying the range of tuning parameter 
 #' to be chosen. The lower limit of lambda must be above 0.
 #' @return \item{lambda0}{(numeric) The estimated tuning parameter.}
@@ -315,9 +313,9 @@ tuning_GCV <-
       proj_matrix <- 
         estimate_ridge(Y = Y, X = X, K = K_mat, lambda = k)$proj_matrix      
       A <- proj_matrix$total
-      
+      trace_A <- sum(diag(A))
       log(t(Y) %*% (diag(n) - A) %*% (diag(n) - A) %*% Y) -
-        2 * log(1 - tr(A) / n - 1 / n)
+        2 * log(1 - trace_A / n - 1 / n)
     })
     
     lambda[which(CV == min(CV))]
@@ -337,10 +335,11 @@ tuning_GCV <-
 #' y^{\star
 #' T}(I-A_\lambda)^2y^\star-2log[1-\frac{tr(A_\lambda)}{n}-\frac{2}{n}]_+\Big\}}
 #' 
-#' @param Y (vector of length n) Reponses of the dataframe.
-#' @param X (dataframe, n*p) Fixed effects variables in the dataframe (could
-#' contains several subfactors).
-#' @param K_mat (matrix, n*n) Estimated ensemble kernel matrix.
+#' @param Y (matrix, n*1) The vector of response variable.
+#' @param X (matrix, n*d_fix) The fixed effect matrix.
+#' @param K_mat (list of matrices) A nested list of kernel term matrices, 
+#' corresponding to each kernel term specified in the formula for 
+#' a base kernel function in kern_func_list.
 #' @param lambda (numeric) A numeric string specifying the range of tuning parameter 
 #' to be chosen. The lower limit of lambda must be above 0.
 #' @return \item{lambda0}{(numeric) The estimated tuning parameter.}
@@ -373,9 +372,9 @@ tuning_GCVc <-
       proj_matrix <- 
         estimate_ridge(Y = Y, X = X, K = K_mat, lambda = k)$proj_matrix      
       A <- proj_matrix$total
-      
+      trace_A <- sum(diag(A))
       log(t(Y) %*% (diag(n) - A) %*% (diag(n) - A) %*% Y) -
-        2 * log(max(0, 1 - tr(A) / n - 2 / n))
+        2 * log(max(0, 1 - trace_A / n - 2 / n))
     })
     
     lambda[which(CV == min(CV))]
@@ -396,10 +395,11 @@ tuning_GCVc <-
 #' y^{\star T}(I-A_\lambda)y^\star-\frac{1}{n-1}log \mid I-A_\lambda \mid
 #' \Big\}}
 #' 
-#' @param Y (vector of length n) Reponses of the dataframe.
-#' @param X (dataframe, n*p) Fixed effects variables in the dataframe (could
-#' contains several subfactors).
-#' @param K_mat (matrix, n*n) Estimated ensemble kernel matrix.
+#' @param Y (matrix, n*1) The vector of response variable.
+#' @param X (matrix, n*d_fix) The fixed effect matrix.
+#' @param K_mat (list of matrices) A nested list of kernel term matrices, 
+#' corresponding to each kernel term specified in the formula for 
+#' a base kernel function in kern_func_list.
 #' @param lambda (numeric) A numeric string specifying the range of tuning parameter 
 #' to be chosen. The lower limit of lambda must be above 0.
 #' @return \item{lambda0}{(numeric) The estimated tuning parameter.}
@@ -456,10 +456,11 @@ tuning_gmpml <-
 #' T}[I-diag(A_\lambda)-\frac{1}{n}I]^{-1}(I-A_\lambda)^2[I-diag(A_\lambda)-
 #' \frac{1}{n}I]^{-1}y^\star \Big\}}
 #' 
-#' @param Y (vector of length n) Reponses of the dataframe.
-#' @param X (dataframe, n*p) Fixed effects variables in the dataframe (could
-#' contains several subfactors).
-#' @param K_mat (matrix, n*n) Estimated ensemble kernel matrix.
+#' @param Y (matrix, n*1) The vector of response variable.
+#' @param X (matrix, n*d_fix) The fixed effect matrix.
+#' @param K_mat (list of matrices) A nested list of kernel term matrices, 
+#' corresponding to each kernel term specified in the formula for 
+#' a base kernel function in kern_func_list.
 #' @param lambda (numeric) A numeric string specifying the range of tuning parameter 
 #' to be chosen. The lower limit of lambda must be above 0.
 #' @return \item{lambda0}{(numeric) The estimated tuning parameter.}

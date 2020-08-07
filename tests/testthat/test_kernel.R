@@ -13,6 +13,7 @@ test_that("intercept kernel", {
   Ktest <- round(intercept_kern(Z1, Z2), 5)
   intercept_fun <- generate_kernel("intercept")
   Kmat <- round(intercept_fun(Z1, Z2), 5)
+  expect_identical(Ktest, Kmat)
 })
 
 test_that("linear kernel", {
@@ -28,6 +29,7 @@ test_that("linear kernel", {
   Ktest <- round(linear_kern(Z1, Z2), 5)
   linear_fun <- generate_kernel("linear")
   Kmat <- round(linear_fun(Z1, Z2), 5)
+  expect_identical(Ktest, Kmat)
 })
 
 test_that("polynomial kernel", {
@@ -41,8 +43,9 @@ test_that("polynomial kernel", {
   Z1 <- rmvnorm(n = 50, mean = rep(0, 3), sigma = diag(3))
   Z2 <- rmvnorm(n = 52, mean = rep(0, 3), sigma = diag(3))
   Ktest <- round(polynomial_kern(Z1, Z2), 5)
-  polynomial_fun <- generate_kernel("polynomial", d = 3)
+  polynomial_fun <- generate_kernel("polynomial", p = 3)
   Kmat <- round(polynomial_fun(Z1, Z2), 5)
+  expect_identical(Ktest, Kmat)
 })
 
 
@@ -61,6 +64,7 @@ test_that("rbf kernel", {
   Ktest <- round(rbf_kern(Z1, Z2), 5)
   rbf_fun <- generate_kernel("rbf", l = 1)
   Kmat <- round(rbf_fun(Z1, Z2), 5)
+  expect_identical(Ktest, Kmat)
 })
 
 test_that("matern kernel", {
@@ -74,8 +78,7 @@ test_that("matern kernel", {
       s <- s + factorial(d + i) / (factorial(i) * factorial(d - i)) *
         (sqrt(8 * v) * r / l) ^ (d - i)
     }
-    k_v <- exp(-sqrt(2 * v) * r / l) * gamma(d + 1) / gamma(2 * d + 1) * s
-    return(k_v)
+    exp(-sqrt(2 * v) * r / l) * gamma(d + 1) / gamma(2 * d + 1) * s
   }
   matern_kern <- function(X2, X1) 
     apply(X1, 1, function(xp){ 
@@ -86,8 +89,9 @@ test_that("matern kernel", {
   Z1 <- rmvnorm(n = 50, mean = rep(0, 3), sigma = diag(3))
   Z2 <- rmvnorm(n = 52, mean = rep(0, 3), sigma = diag(3))
   Ktest <- round(matern_kern(Z1, Z2), 5)
-  matern_fun <- generate_kernel("matern", l = 1, d = 2)
+  matern_fun <- generate_kernel("matern", l = 1, p = 2)
   Kmat <- round(matern_fun(Z1, Z2), 5)
+  expect_identical(Ktest, Kmat)
 })
 
 
@@ -96,8 +100,7 @@ test_that("rational kernel", {
     l <- 1
     d <- 2
     r <- sqrt(sum((xp - xq) ^ 2))
-    k_a <- (1 + r ^ 2 / (2 * d * l ^ 2)) ^ (- d)
-    return(k_a)
+    (1 + r ^ 2 / (2 * d * l ^ 2)) ^ (- d)
   }
   rational_kern <- function(X2, X1) 
     apply(X1, 1, function(xp){ 
@@ -108,8 +111,9 @@ test_that("rational kernel", {
   Z1 <- rmvnorm(n = 50, mean = rep(0, 3), sigma = diag(3))
   Z2 <- rmvnorm(n = 52, mean = rep(0, 3), sigma = diag(3))
   Ktest <- round(rational_kern(Z1, Z2), 5)
-  rational_fun <- generate_kernel("rational", l = 1, d = 2)
+  rational_fun <- generate_kernel("rational", l = 1, p = 2)
   Kmat <- round(rational_fun(Z1, Z2), 5)
+  expect_identical(Ktest, Kmat)
 })
 
 
@@ -119,8 +123,7 @@ test_that("nn kernel", {
     xq <- c(1, xq)
     s <- 2 * t(xp)  %*% xq / (sqrt((1 + 2 * t(xp) %*% xp) 
                                    * (1 + 2 * t(xq) %*% xq)))
-    k_n <- asin(s)
-    return(k_n)
+    2 / pi * asin(s)
   }
   nn_kern <- function(X2, X1) 
     apply(X1, 1, function(xp){ 
@@ -131,7 +134,8 @@ test_that("nn kernel", {
   Z1 <- rmvnorm(n = 50, mean = rep(0, 3), sigma = diag(3))
   Z2 <- rmvnorm(n = 52, mean = rep(0, 3), sigma = diag(3))
   Ktest <- round(nn_kern(Z1, Z2), 5)
-  nn_fun <- generate_kernel("nn")
+  nn_fun <- generate_kernel("nn", sigma = 1)
   Kmat <- round(nn_fun(Z1, Z2), 5)
+  expect_identical(Ktest, Kmat)
 })
 

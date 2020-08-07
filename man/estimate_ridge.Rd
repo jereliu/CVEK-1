@@ -4,14 +4,19 @@
 \alias{estimate_ridge}
 \title{Estimating a Single Model}
 \usage{
-estimate_ridge(Y, X, K, lambda, compute_kernel_terms = TRUE,
-  converge_thres = 1e-04)
+estimate_ridge(
+  Y,
+  X,
+  K,
+  lambda,
+  compute_kernel_terms = TRUE,
+  converge_thres = 1e-04
+)
 }
 \arguments{
-\item{Y}{(vector of length n) Reponses of the dataframe.}
+\item{Y}{(matrix, n*1) The vector of response variable.}
 
-\item{X}{(dataframe, n*p) Fixed effects variables in the dataframe (could
-contains several subfactors).}
+\item{X}{(matrix, n*d_fix) The fixed effect matrix.}
 
 \item{K}{(list of matrices) A nested list of kernel term matrices, 
 corresponding to each kernel term specified in the formula for 
@@ -26,16 +31,16 @@ If FALSE then only compute the overall effect.}
 \item{converge_thres}{(numeric) The convergence threshold for computing kernel terms.}
 }
 \value{
-\item{lambda}{(numeric) The selected tuning parameter based on the
-estimated ensemble kernel matrix.}
+\item{beta}{(matrix, d_fixed*1) Fixed effect estimates.}
 
-\item{beta}{(matrix, p*1) Fixed effects estimator of the model.}
+\item{alpha}{(matrix, n*k_terms) Kernel effect estimates for each kernel term.}
 
-\item{alpha}{(matrix, n*length(K)) Random effects estimator for each kernel 
-term specified in the formula.}
+\item{kern_term_mat}{(matrix, n*k_terms) Kernel effect for each kernel term.}
 
-\item{proj_matrix}{(list of length 4) Estimated projection matrices of the
-model.}
+\item{A_list}{(list of length k_terms) Projection matrices for each kernel term.}
+
+\item{proj_matrix}{(list of length 4) Estimated projection matrices, combined 
+across kernel terms.}
 }
 \description{
 Estimating projection matrices and parameter estimates for a single model.
@@ -47,14 +52,33 @@ I)^{-1}X]^{-1}X^T(K+\lambda I)^{-1}y} \deqn{\hat{\alpha}=(K+\lambda
 I)^{-1}(y-\hat{\beta}X)}.
 }
 \examples{
+kern_par <- data.frame(method = c("linear", "polynomial", "matern"), 
+                       l = c(.5, 1, 1.5), p = 1:3, stringsAsFactors = FALSE)
+# define kernel library
+kern_func_list <- define_library(kern_par)
+n <- 50
+d <- 4
+formula <- y ~ x1 + x2 + k(x3, x4)
+data <- as.data.frame(matrix(
+  rnorm(n * d),
+  ncol = d,
+  dimnames = list(NULL, paste0("x", 1:d))
+))
+lnr_kern_func <- generate_kernel(method = "linear")
+kern_effect_mat <- 
+  parse_kernel_variable("k(x3, x4)", lnr_kern_func, data)
+beta_true <- c(1, .41, 2.37)
+alpha_true <- rnorm(n)
 
+K <- kern_effect_mat
+data$y <- as.matrix(cbind(1, data[, c("x1", "x2")])) \%*\% beta_true + 
+  K \%*\% alpha_true
 
-
-estimate_ridge(Y = CVEK:::model_matrices$y, 
-X = CVEK:::model_matrices$X, K = CVEK:::K_ens, 
-lambda = CVEK:::lambda_ens)
-
-
+model_matrices <- parse_cvek_formula(formula, 
+                                     kern_func_list = kern_func_list, 
+                                     data = data, verbose = FALSE)
+estimate_ridge(Y = model_matrices$y, X = model_matrices$X, 
+K = model_matrices$K[[1]], lambda = exp(-5))
 
 }
 \references{

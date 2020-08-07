@@ -15,17 +15,18 @@ when strategy = "exp" \code{\link{ensemble_exp}}.}
 
 \item{error_mat}{(matrix, n*K) A n\*K matrix indicating errors.}
 
-\item{A_hat}{(list of length K) A list of projection matrices for each
-kernel in the kernel library.}
+\item{A_hat}{(list of length K) A list of projection matrices to kernel space 
+for each kernel in the kernel library.}
 }
 \value{
-\item{A_est}{(matrix, n*n) A list of estimated kernel matrices.}
+\item{A_est}{(matrix, n*n) The ensemble projection matrix.}
 
 \item{u_hat}{(vector of length K) A vector of weights of the kernels in the
 library.}
 }
 \description{
-Give a list of estimated kernel matrices and their weights.
+Give the ensemble projection matrix and weights of the kernels in the
+library.
 }
 \details{
 There are three ensemble strategies available here:
@@ -55,22 +56,12 @@ based on the estimated errors \eqn{\{\hat{\epsilon}_d\}_{d=1}^D}.
 \parallel_2^2/\beta)}{\sum_{d=1}^Dexp(-\parallel \hat{\epsilon}_d
 \parallel_2^2/\beta)}}
 }
-\examples{
-
-
-
-ensemble(strategy = "stack", beta_exp = 1, 
-CVEK:::error_mat, CVEK:::P_K_hat)
-
-
-
-}
 \references{
 Jeremiah Zhe Liu and Brent Coull. Robust Hypothesis Test for
 Nonlinear Effect with Gaussian Processes. October 2017.
 
 Xiang Zhan, Anna Plantinga, Ni Zhao, and Michael C. Wu. A fast small-sample
-kernel inde- pendence test for microbiome community-level association
+kernel independence test for microbiome community-level association
 analysis. December 2017.
 
 Arnak S. Dalalyan and Alexandre B. Tsybakov. Aggregation by Exponential

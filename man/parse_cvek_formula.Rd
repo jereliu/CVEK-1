@@ -2,21 +2,26 @@
 % Please edit documentation in R/interface.R
 \name{parse_cvek_formula}
 \alias{parse_cvek_formula}
-\title{Parses user-supplied formula to fixed-effect and kernel matrices.}
+\title{Parsing User-supplied Formula}
 \usage{
-parse_cvek_formula(formula, kern_func_list, data, data_new = NULL,
-  verbose = FALSE)
+parse_cvek_formula(
+  formula,
+  kern_func_list,
+  data,
+  data_new = NULL,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{formula}{(formula) A user-supplied formula.}
 
-\item{kern_func_list}{(list) a list of kernel functions in the kernel library}
+\item{kern_func_list}{(list) A list of kernel functions in the kernel library}
 
-\item{data}{(data.frame, n*d) a data.frame, list or environment (or object
+\item{data}{(data.frame, n*d) A data.frame, list or environment (or object
 coercible by as.data.frame to a data.frame), containing the variables in
 formula. Neither a matrix nor an array will be accepted.}
 
-\item{data_new}{(data.frame, n_new*d) new data for computing predictions.}
+\item{data_new}{(data.frame, n_new*d) New data for computing predictions.}
 
 \item{verbose}{(logical) Whether to print additional messages.}
 }
@@ -24,20 +29,19 @@ formula. Neither a matrix nor an array will be accepted.}
 A list of three slots:
 \item{Y}{(matrix, n*1) The vector of response variable.}
 \item{X}{(matrix, n*d_fix) The fixed effect matrix.}
-\item{K}{(list of matrices) A nested list of
-kernel term matrices. The first level corresponds to each base kernel
-function in kern_func_list, the second level corresponds to each kernel term
-specified in the formula.
-}
+\item{K}{(list of matrices) A nested list of kernel term matrices. 
+The first level corresponds to each base kernel function in 
+kern_func_list, the second level corresponds to each kernel term
+specified in the formula.}
 }
 \description{
-Parses user-supplied formula to fixed-effect and kernel matrices.
+Parsing user-supplied formula to fixed-effect and kernel matrices.
 }
 \details{
 The formula object is exactly like the formula for a GLM except that user can
 use k() to specify kernel terms.
 Additionally, user can specify interaction between kernel terms (using either '*' and ':'),
-and exclude interaction term by including -1 on the rhs of formula.
+and exclude interaction term by including -1 on the RHS of formula.
 }
 \examples{
 
@@ -49,14 +53,10 @@ dimnames = list(NULL, paste0("x", 1:7))))
 data$y <- as.matrix(data) \%*\% rnorm(7)
 formula <- y ~ x1 + x2 + k(x3, x4) + k(x5, x6) + k(x7) + k(x3, x4) * k(x5, x6) * x7
 kern_par <- data.frame(method = c("rbf", "polynomial", "matern"),
-l = c(.5, 1, 1.5), d = 1:3, stringsAsFactors = FALSE)
+l = c(.5, 1, 1.5), p = 1:3, sigma = rep(1, 3), stringsAsFactors = FALSE)
 
 # define kernel library
-kern_func_list <- list()
-for (d in 1:nrow(kern_par)) {
-kern_func_list[[d]] <- generate_kernel(kern_par[d,]$method,
-kern_par[d,]$l, kern_par[d,]$d)
-}
+kern_func_list <- define_library(kern_par)
 
 # produce training data 
 parse_cvek_formula(formula, kern_func_list = kern_func_list, 
@@ -65,7 +65,6 @@ data = data, data_new = NULL)
 # produce prediction data from data_new
 parse_cvek_formula(formula, kern_func_list = kern_func_list, 
 data = data, data_new = data_new)
-
 }
 \author{
 Jeremiah Zhe Liu

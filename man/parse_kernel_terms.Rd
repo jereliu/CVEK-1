@@ -2,27 +2,28 @@
 % Please edit documentation in R/interface.R
 \name{parse_kernel_terms}
 \alias{parse_kernel_terms}
-\title{Computes kernel matrix for each kernel term in the formula}
+\title{Compute Kernel Matrix}
 \usage{
 parse_kernel_terms(kern_effect_formula, kern_func, data, data_new = NULL)
 }
 \arguments{
-\item{kern_effect_formula}{(character) a term in the formula}
+\item{kern_effect_formula}{(character) A term in the formula.}
 
 \item{kern_func}{(function) A kernel function. Will be overwritten to linear
-kernel if the variable doesn't contain 'k()'}
+kernel if the variable doesn't contain 'k()'.}
 
-\item{data}{(data.frame, n*d) a data.frame, list or environment (or object
+\item{data}{(data.frame, n*d) A data.frame, list or environment (or object
 coercible by as.data.frame to a data.frame), containing the variables in
 formula. Neither a matrix nor an array will be accepted.}
 
-\item{data_new}{(data.frame, n_new*d) new data for computing predictions.}
+\item{data_new}{(data.frame, n_new*d) New data for computing predictions.}
 }
 \value{
-A list of kernel matrices for each term in the formula
+\item{kern_term_list}{(list) A list of kernel matrices for each term 
+in the formula.}
 }
 \description{
-Computes kernel matrix for each kernel term in the formula
+Compute kernel matrix for each kernel term in the formula.
 }
 \author{
 Jeremiah Zhe Liu

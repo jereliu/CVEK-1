@@ -7,21 +7,22 @@
 tuning(Y, X, K_mat, mode, lambda)
 }
 \arguments{
-\item{Y}{(vector of length n) Reponses of the dataframe.}
+\item{Y}{(matrix, n*1) The vector of response variable.}
 
-\item{X}{(dataframe, n*p) Fixed effects variables in the dataframe (could
-contains several subfactors).}
+\item{X}{(matrix, n*d_fix) The fixed effect matrix.}
 
-\item{K_mat}{(matrix, n*n) Estimated ensemble kernel matrix.}
+\item{K_mat}{(list of matrices) A nested list of kernel term matrices, 
+corresponding to each kernel term specified in the formula for 
+a base kernel function in kern_func_list.}
 
 \item{mode}{(character) A character string indicating which tuning parameter
 criteria is to be used.}
 
-\item{lambda}{(numeric) A numeric string specifying the range of tuning parameter 
-to be chosen. The lower limit of lambda must be above 0.}
+\item{lambda}{(numeric) A numeric string specifying the range of tuning 
+parameter to be chosen. The lower limit of lambda must be above 0.}
 }
 \value{
-\item{lambda0}{(numeric) The estimated tuning parameter.}
+\item{lambda0}{(numeric) The selected tuning parameter.}
 }
 \description{
 Calculate tuning parameters based on given criteria.
@@ -41,7 +42,7 @@ T}[I-diag(A_\lambda)-\frac{1}{n}I]^{-1}(I-A_\lambda)^2[I-diag(A_\lambda)-
 \deqn{\lambda_{AIC}=\underset{\lambda \in \Lambda}{argmin}\Big\{log\;
 y^{\star T}(I-A_\lambda)^2y^\star+\frac{2[tr(A_\lambda)+2]}{n}\Big\}}
 
-\bold{Akaike Information Criteria (small sample size)}
+\bold{Akaike Information Criteria (small-sample variant)}
 
 \deqn{\lambda_{AICc}=\underset{\lambda \in \Lambda}{argmin}\Big\{log\;
 y^{\star
@@ -58,7 +59,7 @@ y^{\star T}(I-A_\lambda)^2y^\star+\frac{log(n)[tr(A_\lambda)+2]}{n}\Big\}}
 y^{\star
 T}(I-A_\lambda)^2y^\star-2log[1-\frac{tr(A_\lambda)}{n}-\frac{1}{n}]_+\Big\}}
 
-\bold{Generalized Cross Validation (small sample size)}
+\bold{Generalized Cross Validation (small-sample variant)}
 
 \deqn{\lambda_{GCVc}=\underset{\lambda \in \Lambda}{argmin}\Big\{log\;
 y^{\star
@@ -69,17 +70,6 @@ T}(I-A_\lambda)^2y^\star-2log[1-\frac{tr(A_\lambda)}{n}-\frac{2}{n}]_+\Big\}}
 \deqn{\lambda_{GMPML}=\underset{\lambda \in \Lambda}{argmin}\Big\{log\;
 y^{\star T}(I-A_\lambda)y^\star-\frac{1}{n-1}log \mid I-A_\lambda \mid
 \Big\}}
-}
-\examples{
-
-
-
-lambda0 <- tuning(Y = CVEK:::model_matrices$y, 
-X = CVEK:::model_matrices$X, K_mat = CVEK:::K_ens, 
-mode = "loocv", lambda = exp(seq(-10, 5)))
-
-
-
 }
 \references{
 Philip S. Boonstra, Bhramar Mukherjee, and Jeremy M. G. Taylor.

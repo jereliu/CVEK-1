@@ -12,18 +12,18 @@ when strategy = "exp" \code{\link{ensemble_exp}}.}
 
 \item{error_mat}{(matrix, n*K) A n\*K matrix indicating errors.}
 
-\item{A_hat}{(list of length K) A list of projection matrices for each
-kernel in the kernel library.}
+\item{A_hat}{(list of length K) A list of projection matrices to kernel space 
+for each kernel in the kernel library.}
 }
 \value{
-\item{A_est}{(matrix, n*n) A list of estimated kernel matrices.}
+\item{A_est}{(matrix, n*n) The ensemble projection matrix.}
 
 \item{u_hat}{(vector of length K) A vector of weights of the kernels in the
 library.}
 }
 \description{
-Give a list of estimated kernel matrices and their weights using simple
-averaging.
+Give the ensemble projection matrix and weights of the kernels in the
+library using simple averaging.
 }
 \details{
 \bold{Simple Averaging}

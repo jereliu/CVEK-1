@@ -2,19 +2,29 @@
 % Please edit documentation in R/interface.R
 \name{cvek}
 \alias{cvek}
-\title{Conducting Cross-validated Kernel Ensemble based on user-specified formula.}
+\title{Conducting Cross-validated Kernel Ensemble}
 \usage{
-cvek(formula, kern_func_list, data, formula_test = NULL,
-  mode = "loocv", strategy = "stack", beta_exp = 1,
-  lambda = exp(seq(-10, 5)), test = "boot",
-  alt_kernel_type = "linear", B = 100, verbose = FALSE)
+cvek(
+  formula,
+  kern_func_list,
+  data,
+  formula_test = NULL,
+  mode = "loocv",
+  strategy = "stack",
+  beta_exp = 1,
+  lambda = exp(seq(-10, 5)),
+  test = "boot",
+  alt_kernel_type = "linear",
+  B = 100,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{formula}{(formula) A user-supplied formula.}
 
-\item{kern_func_list}{(list) a list of kernel functions in the kernel library}
+\item{kern_func_list}{(list) A list of kernel functions in the kernel library.}
 
-\item{data}{(data.frame, n*d) a data.frame, list or environment (or object
+\item{data}{(data.frame, n*d) A data.frame, list or environment (or object
 coercible by as.data.frame to a data.frame), containing the variables in
 formula. Neither a matrix nor an array will be accepted.}
 
@@ -30,47 +40,100 @@ strategy is to be used.}
 \item{beta_exp}{(numeric/character) A numeric value specifying the parameter
 when strategy = "exp" \code{\link{ensemble_exp}}.}
 
-\item{lambda}{(numeric) A numeric string specifying the range of noise to be
-chosen. The lower limit of lambda must be above 0.}
+\item{lambda}{(numeric) A numeric string specifying the range of 
+tuning parameter to be chosen. The lower limit of lambda must be above 0.}
 
 \item{test}{(character) Type of hypothesis test to conduct.
-Must be eitehr 'asymp' or 'boot'.}
+Must be either 'asymp' or 'boot'.}
 
 \item{alt_kernel_type}{(character) Type of alternative kernel effect to consider.
 Must be either 'linear' or 'ensemble'}
 
-\item{B}{(numeric) Number of boostrap samples.}
+\item{B}{(numeric) Number of bootstrap samples.}
 
 \item{verbose}{(logical) Whether to print additional messages.}
 }
 \value{
-A list of results from kernel ensemble estimates. It contains
-lambda (numeric) The estimated tuning parameter.
-beta (matrix, d_fixed*1) fixed effect estimates.
-alpha (matrix, n*1) kernel effect estimates.
-K (matrix, n*n) Estimated ensemble kernel matrix.
-u_hat (vector of length K) ensemble weight for kernel matrix.
-base_est (list) result list output by the ensemble function.
+\item{lambda}{(numeric) The selected tuning parameter based on the
+estimated ensemble kernel matrix.}
+
+\item{beta}{(matrix, d_fixed*1) Fixed effect estimates.}
+
+\item{alpha}{(matrix, n*1) Kernel effect estimates.}
+
+\item{K}{(matrix, n*n) Estimated ensemble kernel matrix.}
+
+\item{u_hat}{(vector of length K) A vector of weights of the kernels in the
+library.}
+
+\item{base_est}{(list) The detailed estimation results of K kernels.}
+
+\item{pvalue}{(numeric) If formula_test is given, p-value of the test is returned.}
 }
 \description{
-Perform Cross-validated Kernel Ensemble and optionally testing for kernel effect
+Conducting Cross-validated Kernel Ensemble based on user-specified formula.
+}
+\details{
+Perform Cross-validated Kernel Ensemble and optionally test for kernel effect
 based on user-specified formula.
 }
 \examples{
 # create data
-data <- as.data.frame(matrix(rnorm(700), ncol = 7,
-dimnames = list(NULL, paste0("x", 1:7))))
-data$y <- as.matrix(data) \%*\% rnorm(7)
-formula <- y ~ x1 + x2 + k(x3, x4)
-kern_par <- data.frame(method = c("rbf", "polynomial", "matern"),
+kern_par <- data.frame(method = c("linear", "polynomial", "rbf"), 
 l = c(.5, 1, 1.5), p = 1:3, stringsAsFactors = FALSE)
-
 # define kernel library
-kern_func_list <- list()
-for (d in 1:nrow(kern_par)) {
-kern_func_list[[d]] <- generate_kernel(kern_par[d,]$method,
-kern_par[d,]$l, kern_par[d,]$p)
-}
+kern_func_list <- define_library(kern_par)
+n <- 50
+d <- 6
+formula <- y ~ x1 + x2 + k(x3, x4) + k(x5, x6)
+data <- as.data.frame(matrix(
+  rnorm(n * d),
+  ncol = d,
+  dimnames = list(NULL, paste0("x", 1:d))
+))
+lnr_kern_func <- generate_kernel(method = "linear")
+rbf_kern_func <- generate_kernel(method = "rbf", l = 1.25)
+kern_effect_lnr <- 
+  parse_kernel_variable("k(x3, x4)", lnr_kern_func, data)
+kern_effect_rbf <- 
+  parse_kernel_variable("k(x5, x6)", rbf_kern_func, data)
+beta_true <- c(1, .41, 2.37)
+alpha_lnr_true <- rnorm(n)
+alpha_rbf_true <- rnorm(n)
 
-cvek(formula, kern_func_list = kern_func_list, data = data)
+kern_term_lnr <- kern_effect_lnr \%*\% alpha_lnr_true
+kern_term_rbf <- kern_effect_rbf \%*\% alpha_rbf_true
+
+data$y <- as.matrix(cbind(1, data[, c("x1", "x2")])) \%*\% beta_true + 
+  kern_term_lnr + kern_term_rbf
+
+formula_test <- y ~ k(x1):k(x4, x6)
+pvalue <- cvek(formula, kern_func_list = kern_func_list, 
+               data = data, formula_test = formula_test, 
+               alt_kernel_type = "ensemble", B = 200)$pvalue
+
+}
+\references{
+Xihong Lin. Variance component testing in generalised linear
+models with random effects. June 1997.
+
+Arnab Maity and Xihong Lin. Powerful tests for detecting a gene effect in
+the presence of possible gene-gene interactions using garrote kernel
+machines. December 2011.
+
+Petra Bu ̊zˇkova ́, Thomas Lumley, and Kenneth Rice. Permutation and
+parametric bootstrap tests for gene-gene and gene-environment interactions.
+January 2011.
+}
+\seealso{
+\code{\link{estimation}}
+
+method: \code{\link{generate_kernel}}
+
+mode: \code{\link{tuning}}
+
+strategy: \code{\link{ensemble}}
+}
+\author{
+Jeremiah Zhe Liu
 }

@@ -7,10 +7,10 @@
 standardize(X)
 }
 \arguments{
-\item{X}{(matrix, n*p0) Original data matrix.}
+\item{X}{(matrix) Original data matrix.}
 }
 \value{
-\item{X}{(matrix, n*p0) Standardized data matrix.}
+\item{X}{(matrix) Standardized data matrix.}
 }
 \description{
 Center and scale the data matrix into mean zero and standard deviation one.

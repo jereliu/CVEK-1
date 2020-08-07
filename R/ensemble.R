@@ -1,6 +1,7 @@
 #' Estimating Ensemble Kernel Matrices
 #' 
-#' Give a list of estimated kernel matrices and their weights.
+#' Give the ensemble projection matrix and weights of the kernels in the
+#' library.
 #' 
 #' There are three ensemble strategies available here:
 #' 
@@ -34,9 +35,9 @@
 #' @param beta_exp (numeric/character) A numeric value specifying the parameter
 #' when strategy = "exp" \code{\link{ensemble_exp}}.
 #' @param error_mat (matrix, n*K) A n\*K matrix indicating errors.
-#' @param A_hat (list of length K) A list of projection matrices for each
-#' kernel in the kernel library.
-#' @return \item{A_est}{(matrix, n*n) A list of estimated kernel matrices.}
+#' @param A_hat (list of length K) A list of projection matrices to kernel space 
+#' for each kernel in the kernel library.
+#' @return \item{A_est}{(matrix, n*n) The ensemble projection matrix.}
 #' 
 #' \item{u_hat}{(vector of length K) A vector of weights of the kernels in the
 #' library.}
@@ -46,20 +47,12 @@
 #' Nonlinear Effect with Gaussian Processes. October 2017.
 #' 
 #' Xiang Zhan, Anna Plantinga, Ni Zhao, and Michael C. Wu. A fast small-sample
-#' kernel inde- pendence test for microbiome community-level association
+#' kernel independence test for microbiome community-level association
 #' analysis. December 2017.
 #' 
 #' Arnak S. Dalalyan and Alexandre B. Tsybakov. Aggregation by Exponential
 #' Weighting and Sharp Oracle Inequalities. In Learning Theory, Lecture Notes
 #' in Computer Science, pages 97– 111. Springer, Berlin, Heidelberg, June 2007.
-#' @examples
-#' 
-#' 
-#' 
-#' ensemble(strategy = "stack", beta_exp = 1, 
-#' CVEK:::error_mat, CVEK:::P_K_hat)
-#' 
-#' 
 #' 
 #' @export ensemble
 ensemble <-
@@ -79,7 +72,8 @@ ensemble <-
 
 #' Estimating Ensemble Kernel Matrices Using Stack
 #' 
-#' Give a list of estimated kernel matrices and their weights using stacking.
+#' Give the ensemble projection matrix and weights of the kernels in the
+#' library using stacking.
 #' 
 #' \bold{Empirical Risk Minimization (Stacking)}
 #' 
@@ -95,9 +89,9 @@ ensemble <-
 #' @param beta_exp (numeric/character) A numeric value specifying the parameter
 #' when strategy = "exp" \code{\link{ensemble_exp}}.
 #' @param error_mat (matrix, n*K) A n\*K matrix indicating errors.
-#' @param A_hat (list of length K) A list of projection matrices for each
-#' kernel in the kernel library.
-#' @return \item{A_est}{(matrix, n*n) A list of estimated kernel matrices.}
+#' @param A_hat (list of length K) A list of projection matrices to kernel space 
+#' for each kernel in the kernel library.
+#' @return \item{A_est}{(matrix, n*n) The ensemble projection matrix.}
 #' 
 #' \item{u_hat}{(vector of length K) A vector of weights of the kernels in the
 #' library.}
@@ -140,8 +134,8 @@ ensemble_stack <-
 
 #' Estimating Ensemble Kernel Matrices Using AVG
 #' 
-#' Give a list of estimated kernel matrices and their weights using simple
-#' averaging.
+#' Give the ensemble projection matrix and weights of the kernels in the
+#' library using simple averaging.
 #' 
 #' \bold{Simple Averaging}
 #' 
@@ -152,9 +146,9 @@ ensemble_stack <-
 #' @param beta_exp (numeric/character) A numeric value specifying the parameter
 #' when strategy = "exp" \code{\link{ensemble_exp}}.
 #' @param error_mat (matrix, n*K) A n\*K matrix indicating errors.
-#' @param A_hat (list of length K) A list of projection matrices for each
-#' kernel in the kernel library.
-#' @return \item{A_est}{(matrix, n*n) A list of estimated kernel matrices.}
+#' @param A_hat (list of length K) A list of projection matrices to kernel space 
+#' for each kernel in the kernel library.
+#' @return \item{A_est}{(matrix, n*n) The ensemble projection matrix.}
 #' 
 #' \item{u_hat}{(vector of length K) A vector of weights of the kernels in the
 #' library.}
@@ -192,8 +186,8 @@ ensemble_avg <-
 
 #' Estimating Ensemble Kernel Matrices Using EXP
 #' 
-#' Give a list of estimated kernel matrices and their weights using exponential
-#' weighting.
+#' Give the ensemble projection matrix and weights of the kernels in the
+#' library using exponential weighting.
 #' 
 #' \bold{Exponential Weighting}
 #' 
@@ -213,9 +207,9 @@ ensemble_avg <-
 #' @param beta_exp (numeric/character) A numeric value specifying the parameter
 #' when strategy = "exp". See Details.
 #' @param error_mat (matrix, n*K) A n\*K matrix indicating errors.
-#' @param A_hat (list of length K) A list of projection matrices for each
-#' kernel in the kernel library.
-#' @return \item{A_est}{(matrix, n*n) A list of estimated kernel matrices.}
+#' @param A_hat (list of length K) A list of projection matrices to kernel space 
+#' for each kernel in the kernel library.
+#' @return \item{A_est}{(matrix, n*n) The ensemble projection matrix.}
 #' 
 #' \item{u_hat}{(vector of length K) A vector of weights of the kernels in the
 #' library.}

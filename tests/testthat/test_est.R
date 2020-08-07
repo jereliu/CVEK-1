@@ -4,14 +4,9 @@ test_that(desc = "single kernel term case",
           code = {
             # set up data
             kern_par <- data.frame(method = c("linear", "polynomial", "matern"), 
-                                   l = c(.5, 1, 1.5), d = 1:3, stringsAsFactors = FALSE)
+                                   l = c(.5, 1, 1.5), p = 1:3, stringsAsFactors = FALSE)
             # define kernel library
-            kern_func_list <- list()
-            for (j in 1:nrow(kern_par)) {
-              kern_func_list[[j]] <- generate_kernel(kern_par[j,]$method, 
-                                                     kern_par[j,]$l, 
-                                                     kern_par[j,]$d)
-            }
+            kern_func_list <- define_library(kern_par)
             n <- 50
             d <- 4
             formula <- y ~ x1 + x2 + k(x3, x4)
@@ -45,7 +40,7 @@ test_that(desc = "single kernel term case",
             y_new_ridge <- X %*% result$beta + result$K %*% result$alpha
             
             K <- kern_effect_mat
-            K_scale <- tr(K)
+            K_scale <- sum(diag(K))
             K <- K / K_scale
             lambda0 <- tuning(data$y, X, list(K), mode = "loocv", lambda = exp(seq(-10, 5)))
             V_inv <- ginv(K + lambda0 * diag(n))
@@ -64,14 +59,9 @@ test_that(desc = "two kernel terms case",
           code = {
             # set up data
             kern_par <- data.frame(method = c("linear", "polynomial", "rbf"), 
-                                   l = c(.5, 1, 1.5), d = 1:3, stringsAsFactors = FALSE)
+                                   l = c(.5, 1, 1.5), p = 1:3, stringsAsFactors = FALSE)
             # define kernel library
-            kern_func_list <- list()
-            for (j in 1:nrow(kern_par)) {
-              kern_func_list[[j]] <- generate_kernel(kern_par[j,]$method, 
-                                                     kern_par[j,]$l, 
-                                                     kern_par[j,]$d)
-            }
+            kern_func_list <- define_library(kern_par)
             n <- 50
             d <- 6
             formula <- y ~ x1 + x2 + k(x3, x4) + k(x5, x6)
@@ -128,14 +118,9 @@ test_that(desc = "individual term estimate consistent with projection matrix",
           code = {
             # set up data
             kern_par <- data.frame(method = c("linear", "polynomial", "rbf"), 
-                                   l = c(.5, 1, 1.5), d = 1:3, stringsAsFactors = FALSE)
+                                   l = c(.5, 1, 1.5), p = 1:3, stringsAsFactors = FALSE)
             # define kernel library
-            kern_func_list <- list()
-            for (j in 1:nrow(kern_par)) {
-              kern_func_list[[j]] <- generate_kernel(kern_par[j,]$method, 
-                                                     kern_par[j,]$l, 
-                                                     kern_par[j,]$d)
-            }
+            kern_func_list <- define_library(kern_par)
             n <- 50
             d <- 6
             formula <- y ~ x1 + x2 + k(x3, x4) + k(x5, x6)
@@ -212,14 +197,9 @@ test_that("implementation of pure fixed effects", {
 
 test_that("implementation of pure random effects", {
   names(longley) <- c("y", paste0("x", 1:6))
-  kern_par <- data.frame(method = "linear", l = 1, d = 2,
+  kern_par <- data.frame(method = "linear", l = 1, p = 2,
                          stringsAsFactors = FALSE)
-  kern_func_list <- list()
-  for (j in 1:nrow(kern_par)) {
-    kern_func_list[[j]] <- generate_kernel(kern_par[j,]$method,
-                                           kern_par[j,]$l,
-                                           kern_par[j,]$d)
-  }
+  kern_func_list <- define_library(kern_par)
   
   formula <- y ~ k(x1, x2, x3, x4, x5, x6)
   model_matrices <- parse_cvek_formula(formula, 

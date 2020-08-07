@@ -4,14 +4,21 @@
 \alias{estimation}
 \title{Conducting Gaussian Process Regression}
 \usage{
-estimation(Y, X, K_list = list(NULL), mode = "loocv",
-  strategy = "stack", beta_exp = 1, lambda = exp(seq(-10, 5)), ...)
+estimation(
+  Y,
+  X,
+  K_list = NULL,
+  mode = "loocv",
+  strategy = "stack",
+  beta_exp = 1,
+  lambda = exp(seq(-10, 5)),
+  ...
+)
 }
 \arguments{
-\item{Y}{(vector of length n) Reponses of the dataframe.}
+\item{Y}{(matrix, n*1) The vector of response variable.}
 
-\item{X}{(dataframe, n*p) Fixed effects variables in the dataframe (could
-contains several subfactors).}
+\item{X}{(matrix, n*d_fix) The fixed effect matrix.}
 
 \item{K_list}{(list of matrices) A nested list of kernel term matrices. 
 The first level corresponds to each base kernel function in kern_func_list, 
@@ -26,8 +33,8 @@ strategy is to be used.}
 \item{beta_exp}{(numeric/character) A numeric value specifying the parameter
 when strategy = "exp" \code{\link{ensemble_exp}}.}
 
-\item{lambda}{(numeric) A numeric string specifying the range of noise to be
-chosen. The lower limit of lambda must be above 0.}
+\item{lambda}{(numeric) A numeric string specifying the range of tuning 
+parameter to be chosen. The lower limit of lambda must be above 0.}
 
 \item{...}{Additional parameters to pass to estimate_ridge.}
 }
@@ -35,35 +42,26 @@ chosen. The lower limit of lambda must be above 0.}
 \item{lambda}{(numeric) The selected tuning parameter based on the
 estimated ensemble kernel matrix.}
 
-\item{beta}{(matrix, p*1) Fixed effects estimator of the model.}
+\item{beta}{(matrix, d_fixed*1) Fixed effect estimates.}
 
-\item{alpha}{(vector of length n) Random effects estimator of the estimated
-ensemble kernel matrix.}
+\item{alpha}{(matrix, n*1) Kernel effect estimates.}
 
 \item{K}{(matrix, n*n) Estimated ensemble kernel matrix.}
 
 \item{u_hat}{(vector of length K) A vector of weights of the kernels in the
 library.}
 
-\item{base_est}{(list of length 6) The detailed estimation results of K
-kernels.}
+\item{kern_term_effect}{(matrix, n*n) Estimated ensemble kernel effect matrix.}
+
+\item{base_est}{(list) The detailed estimation results of K kernels.}
 }
 \description{
-Conduct gaussian process regression based on the estimated ensemble kernel
+Conduct Gaussian process regression based on the estimated ensemble kernel
 matrix.
 }
 \details{
-After obtaining the ensemble kernel matrix, we can calculate the outpur of
-gaussian process regression.
-}
-\examples{
-
-result <- estimation(Y = CVEK:::model_matrices$y, 
-X = CVEK:::model_matrices$X, 
-K_list = CVEK:::model_matrices$K, 
-mode = "loocv", strategy = "stack", 
-beta_exp = 1, lambda = exp(seq(-10, 5)))
-
+After obtaining the ensemble kernel matrix, we can calculate the output of
+Gaussian process regression.
 }
 \seealso{
 strategy: \code{\link{ensemble}}

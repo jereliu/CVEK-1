@@ -7,25 +7,24 @@
 estimate_sigma2(Y, X, lambda_hat, y_fixed_hat, alpha_hat, K_hat)
 }
 \arguments{
-\item{Y}{(vector of length n) Reponses of the dataframe.}
+\item{Y}{(matrix, n*1) The vector of response variable.}
 
-\item{X}{(dataframe, n*p) Fixed effects variables in the dataframe (could
-contains several subfactors).}
+\item{X}{(matrix, n*d_fix) The fixed effect matrix.}
 
 \item{lambda_hat}{(numeric) The selected tuning parameter based on the
 estimated ensemble kernel matrix.}
 
-\item{y_fixed_hat}{(vector of length n) Estimated fixed effects of the
-responses.}
+\item{y_fixed_hat}{(vector of length n) Estimated fixed effect of the
+response.}
 
-\item{alpha_hat}{(vector of length n) Random effects estimator of the
+\item{alpha_hat}{(vector of length n) Kernel effect estimators of the
 estimated ensemble kernel matrix.}
 
 \item{K_hat}{(matrix, n*n) Estimated ensemble kernel matrix.}
 }
 \value{
 \item{sigma2_hat}{(numeric) The estimated noise of the fixed
-effects.}
+effect.}
 }
 \description{
 An implementation of Gaussian processes for estimating noise.

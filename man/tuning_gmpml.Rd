@@ -7,12 +7,13 @@
 tuning_gmpml(Y, X, K_mat, lambda)
 }
 \arguments{
-\item{Y}{(vector of length n) Reponses of the dataframe.}
+\item{Y}{(matrix, n*1) The vector of response variable.}
 
-\item{X}{(dataframe, n*p) Fixed effects variables in the dataframe (could
-contains several subfactors).}
+\item{X}{(matrix, n*d_fix) The fixed effect matrix.}
 
-\item{K_mat}{(matrix, n*n) Estimated ensemble kernel matrix.}
+\item{K_mat}{(list of matrices) A nested list of kernel term matrices, 
+corresponding to each kernel term specified in the formula for 
+a base kernel function in kern_func_list.}
 
 \item{lambda}{(numeric) A numeric string specifying the range of tuning parameter 
 to be chosen. The lower limit of lambda must be above 0.}

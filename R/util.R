@@ -1,180 +1,38 @@
-#' From Vectors to Single Variables
+#' Defining Kernel Library
 #' 
-#' Transform format of predictors from vectors to single variables.
+#' Generate the expected kernel library based on user-specified dataframe.
 #' 
+#' It creates a kernel library according to the parameters given in kern_par.
 #' 
-#' @param formula (formula) A symbolic description of the model to be fitted.
-#' @param label_names (list) A character string indicating all the interior
-#' variables included in each group of random effect.
-#' @return \item{generic_formula}{(formula) A symbolic description of the model
-#' written in single variables format.}
+#' * kern_par: for a library of K kernels, the dimension of this dataframe is
+#'   K*3. Each row represents a kernel. The first column is method, with entries
+#'   of character class. The second and the third are l and p respectively, both
+#'   with entries of numeric class.
 #' 
-#' \item{length_main}{(integer) A numeric value indicating the length of main
-#' random effects.}
+#' @param kern_par (dataframe, K*3) A dataframe indicating the parameters of
+#' base kernels to fit kernel effect. See Details.
+#' @return \item{kern_func_list}{(list of length K) A list of kernel functions 
+#' given by user. Will be overwritten to linear kernel if kern_par is NULL.}
 #' @author Wenying Deng
-#' @examples
+#' @seealso method: \code{\link{generate_kernel}}
 #' 
-#' 
-#' 
-#' generic_formula0 <- generate_formula(formula = Y ~ X + Z1 + Z2,
-#' label_names = list(Z1 = c("z1", "z2"), Z2 = c("z3", "z4")))
-#' 
-#' 
-#' 
-#' @export generate_formula
-generate_formula <-
-  function(formula, label_names) {
-    
-    formula_factors <- attr(terms(formula), "factors")
-    generic_formula <- Y ~ 1
-    length_main <- 0
-    for (i in 2:dim(formula_factors)[2]) {
-      terms_names <-
-        rownames(formula_factors)[which(formula_factors[, i] == 1)]
-      if (length(terms_names) == 1) {
-        generic_formula <-
-          update.formula(generic_formula,
-                         as.formula(paste(as.character(
-                           attr(terms(formula), "variables"))[2],
-                           paste(label_names[[terms_names]], 
-                                 collapse=" + "), sep=" ~ .+")))
-        length_main <- length_main + length(label_names[[terms_names]])
-      } else {
-        interaction_formula <-
-          paste("(", paste(label_names[[terms_names[1]]], 
-                           collapse=" + "), ")", sep="")
-        for (j in 2:length(terms_names)) {
-          interaction_formula <-
-            paste(interaction_formula, "*(",
-                  paste(label_names[[terms_names[j]]], 
-                        collapse=" + "), ")", sep=" ")
-        }
-        generic_formula <-
-          update.formula(generic_formula,
-                         as.formula(paste(as.character(
-                           attr(terms(formula), "variables"))[2], 
-                           interaction_formula, sep=" ~ .+")
-                         )
-          )
-      }
+#' @export define_library
+define_library <- function(kern_par = NULL) {
+  if (is.null(kern_par)){
+    lnr_func <- generate_kernel(method = "linear")
+    kern_func_list <- list(lnr_func)
+  } else {
+    kern_func_list <- list()
+    for (d in 1:nrow(kern_par)) {
+      kern_func_list[[d]] <- generate_kernel(kern_par[d,]$method,
+                                             kern_par[d,]$l, 
+                                             kern_par[d,]$p,
+                                             kern_par[d,]$sigma)
     }
-    
-    list(generic_formula =  generic_formula, length_main = length_main)
   }
-
-
-
-
-
-
-#' Generating Original Data
-#' 
-#' Generate original data based on specific kernels.
-#' 
-#' This function generates with a specific dataset. The argument int_effect
-#' represents the strength of interaction of random effects relative to the
-#' main random effects since all sampled functions have been standardized to
-#' have unit norm.
-#' 
-#' @param n (integer) A numeric number specifying the number of observations.
-#' @param fixed_num (integer) A numeric number specifying the dimension of
-#' fixed effects.
-#' @param label_names (list) A character string indicating all the interior
-#' variables included in each group of random effects.
-#' @param method (character) A character string indicating which kernel is to
-#' be computed.
-#' @param l (numeric) A numeric number indicating the hyperparameter
-#' (flexibility) of a specific kernel.
-#' @param d (integer) For polynomial, d is the power; for matern, v = d + 1 /
-#' 2; for rational, alpha = d.
-#' @param int_effect (numeric) A numeric number specifying the size of
-#' interaction.
-#' @param eps (numeric) A numeric number indicating the size of noise of fixed
-#' effects.
-#' @return \item{data}{(dataframe, n*(p+q)) A dataframe to be fitted.}
-#' @author Wenying Deng
-#' @examples
-#' 
-#' 
-#' 
-#' mydata <- generate_data(n = 100, fixed_num = 1, label_names =
-#' list(Z1 = c("z1", "z2"), Z2 = c("z3", "z4")),
-#' method = "rbf", l = 1, d = 2, int_effect = 0, eps = .01)
-#' 
-#' 
-#' 
-#' @export generate_data
-generate_data <-
-  function(n, fixed_num = 1, 
-           label_names = NULL, 
-           method = "rbf", 
-           l = 1, d = 2, 
-           int_effect = 0, eps = .01) {
-    
-    if ((fixed_num == 0) & is.null(label_names)) {
-      stop("fixed effect and random effect can not be null simultaneously!")
-    }
-    if (!is.null(label_names)) {
-      Z1 <- rmvnorm(n = n,
-                    mean = rep(0, length(label_names[[1]])),
-                    sigma = diag(length(label_names[[1]])))
-      Z2 <- rmvnorm(n = n,
-                    mean = rep(0, length(label_names[[2]])),
-                    sigma = diag(length(label_names[[2]])))
-      kern <- generate_kernel(method = method, l = l, d = d)
-      w1 <- rnorm(n)
-      w2 <- w1
-      w12 <- rnorm(n)
-      K1 <- kern(Z1, Z1)
-      K2 <- kern(Z2, Z2)
-      K1 <- K1 / tr(K1)
-      K2 <- K2 / tr(K2)
-      h0 <- K1 %*% w1 + K2 %*% w2
-      h0 <- h0 / sqrt(sum(h0 ^ 2))
-      h1_prime <- (K1 * K2) %*% w12
-      Ks <- svd(K1 + K2)
-      if (length(Ks$d / sum(Ks$d) > .001) > 0) {
-        len <- length(Ks$d[Ks$d / sum(Ks$d) > .001])
-        U0 <- Ks$u[, 1:len]
-        h1_prime_hat <- fitted(lm(h1_prime ~ U0))
-        h1 <- h1_prime - h1_prime_hat
-        if (all(h1 == 0)) {
-          warning("interaction term colinear with main-effect space!")
-          h1 <- h1_prime
-          h1 <- h1 / sqrt(sum(h1 ^ 2))
-        } else {
-          h1 <- h1 / sqrt(sum(h1 ^ 2))
-        }
-      } else {
-        warning("largest eigen value smaller than 0.001!")
-        h1 <- h1_prime
-        h1 <- h1 / sqrt(sum(h1 ^ 2))
-      }
-    } else {
-      h0 <- 0
-      h1 <- 0
-    }
-    if (fixed_num > 0) {
-      X <- rmvnorm(n = n,
-                   mean = rep(0, fixed_num),
-                   sigma = diag(fixed_num))
-      beta <- rnorm(fixed_num)
-      Y_fixed <- X %*% beta
-      Xnam <- paste0("x", 1:fixed_num)
-    } else {
-      X <- NULL
-      Y_fixed <- 0
-      Xnam <- NULL
-    }
-    
-    Y <- Y_fixed + h0 + int_effect * h1 + rnorm(1) + rnorm(n, 0, eps)
-    data <- as.data.frame(cbind(Y, X, Z1, Z2))
-    colnames(data) <- c("Y", Xnam, label_names[[1]], label_names[[2]])
-    
-    data
-  }
-
-
+  
+  kern_func_list
+}
 
 
 
@@ -183,18 +41,17 @@ generate_data <-
 #' An implementation of Gaussian processes for estimating noise.
 #' 
 #' 
-#' @param Y (vector of length n) Reponses of the dataframe.
-#' @param X (dataframe, n*p) Fixed effects variables in the dataframe (could
-#' contains several subfactors).
+#' @param Y (matrix, n*1) The vector of response variable.
+#' @param X (matrix, n*d_fix) The fixed effect matrix.
 #' @param lambda_hat (numeric) The selected tuning parameter based on the
 #' estimated ensemble kernel matrix.
-#' @param y_fixed_hat (vector of length n) Estimated fixed effects of the
-#' responses.
-#' @param alpha_hat (vector of length n) Random effects estimator of the
+#' @param y_fixed_hat (vector of length n) Estimated fixed effect of the
+#' response.
+#' @param alpha_hat (vector of length n) Kernel effect estimators of the
 #' estimated ensemble kernel matrix.
 #' @param K_hat (matrix, n*n) Estimated ensemble kernel matrix.
 #' @return \item{sigma2_hat}{(numeric) The estimated noise of the fixed
-#' effects.}
+#' effect.}
 #' @author Wenying Deng
 #' @references Jeremiah Zhe Liu and Brent Coull. Robust Hypothesis Test for
 #' Nonlinear Effect with Gaussian Processes. October 2017.s
@@ -208,7 +65,7 @@ estimate_sigma2 <- function(Y, X, lambda_hat, y_fixed_hat, alpha_hat, K_hat) {
   P_X <- X %*% B_mat
   P_K <- K_hat %*% V_inv %*% (diag(n) - P_X)
   A <- P_X + P_K
-  sigma2_hat <- sum((Y - y_fixed_hat - K_hat %*% alpha_hat) ^ 2) / (n - tr(A) - 1)
+  sigma2_hat <- sum((Y - y_fixed_hat - K_hat %*% alpha_hat) ^ 2) / (n - sum(diag(A)) - 1)
   
   sigma2_hat
 }
@@ -221,13 +78,13 @@ estimate_sigma2 <- function(Y, X, lambda_hat, y_fixed_hat, alpha_hat, K_hat) {
 #' 
 #' The test statistic is distributed as a scaled Chi-squared distribution.
 #' 
-#' @param Y (vector of length n) Reponses of the dataframe.
+#' @param Y (matrix, n*1) The vector of response variable.
 #' @param K_int (matrix, n*n) The kernel matrix to be tested.
-#' @param y_fixed (vector of length n) Estimated fixed effects of the
-#' responses.
+#' @param y_fixed (vector of length n) Estimated fixed effect of the
+#' response.
 #' @param K_0 (matrix, n*n) Estimated ensemble kernel matrix.
-#' @param sigma2_hat (numeric) The estimated noise of the fixed effects.
-#' @param tau_hat (numeric) The estimated noise of the random effects.
+#' @param sigma2_hat (numeric) The estimated noise of the fixed effect.
+#' @param tau_hat (numeric) The estimated noise of the kernel effect.
 #' @return \item{test_stat}{(numeric) The computed test statistic.}
 #' @author Wenying Deng
 #' @references Arnab Maity and Xihong Lin. Powerful tests for detecting a gene
@@ -272,15 +129,15 @@ compute_info <-
   function(P0_mat, mat_del = NULL, mat_sigma2 = NULL, mat_tau = NULL) {
     
     I0 <- matrix(NA, 3, 3)
-    I0[1, 1] <- tr(P0_mat %*% mat_del %*% P0_mat %*% mat_del) / 2  
-    I0[1, 2] <- tr(P0_mat %*% mat_del %*% P0_mat %*% mat_sigma2) / 2
+    I0[1, 1] <- sum(diag(P0_mat %*% mat_del %*% P0_mat %*% mat_del)) / 2  
+    I0[1, 2] <- sum(diag(P0_mat %*% mat_del %*% P0_mat %*% mat_sigma2)) / 2
     I0[2, 1] <- I0[1, 2]
-    I0[1, 3] <- tr(P0_mat %*% mat_del %*% P0_mat %*% mat_tau) / 2
+    I0[1, 3] <- sum(diag(P0_mat %*% mat_del %*% P0_mat %*% mat_tau)) / 2
     I0[3, 1] <- I0[1, 3]
-    I0[2, 2] <- tr(P0_mat %*% mat_sigma2 %*% P0_mat %*% mat_sigma2) / 2
-    I0[2, 3] <-  tr(P0_mat %*% mat_sigma2 %*% P0_mat %*% mat_tau) / 2  
+    I0[2, 2] <- sum(diag(P0_mat %*% mat_sigma2 %*% P0_mat %*% mat_sigma2)) / 2
+    I0[2, 3] <- sum(diag(P0_mat %*% mat_sigma2 %*% P0_mat %*% mat_tau)) / 2  
     I0[3, 2] <- I0[2, 3]
-    I0[3, 3] <-  tr(P0_mat %*% mat_tau %*% P0_mat %*% mat_tau) / 2  
+    I0[3, 3] <- sum(diag(P0_mat %*% mat_tau %*% P0_mat %*% mat_tau)) / 2  
 
     I0
   }
@@ -293,8 +150,8 @@ compute_info <-
 #' 
 #' This function gives the standardized data matrix.
 #' 
-#' @param X (matrix, n*p0) Original data matrix.
-#' @return \item{X}{(matrix, n*p0) Standardized data matrix.}
+#' @param X (matrix) Original data matrix.
+#' @return \item{X}{(matrix) Standardized data matrix.}
 #' @author Wenying Deng
 #' @keywords internal
 #' @export standardize
