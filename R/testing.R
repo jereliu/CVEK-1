@@ -37,7 +37,7 @@
 #' Petra Bu ̊zˇkova ́, Thomas Lumley, and Kenneth Rice. Permutation and
 #' parametric bootstrap tests for gene-gene and gene-environment interactions.
 #' January 2011.
-test_asym <- function(Y, X, y_fixed, alpha0, K_ens, 
+test_asymp <- function(Y, X, y_fixed, alpha0, K_ens, 
                       K_int, sigma2_hat, tau_hat, B) {
   
   n <- length(Y)

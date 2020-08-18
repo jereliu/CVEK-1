@@ -106,7 +106,7 @@ cvek <- function(formula,
                  beta_exp = 1,
                  lambda = exp(seq(-10, 5)),
                  test = "boot",
-                 alt_kernel_type = "ensemble",
+                 alt_kernel_type = "linear",
                  B = 100,
                  verbose = FALSE) {
   # specify model matrices for main model
@@ -199,7 +199,7 @@ cvek_test <- function(est_res,
                       kern_func_list,
                       data,
                       test = "boot",
-                      alt_kernel_type = "ensemble",
+                      alt_kernel_type = "linear",
                       B = 100,
                       verbose = FALSE) {
   

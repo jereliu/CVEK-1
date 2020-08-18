@@ -14,7 +14,7 @@ cvek(
   beta_exp = 1,
   lambda = exp(seq(-10, 5)),
   test = "boot",
-  alt_kernel_type = "ensemble",
+  alt_kernel_type = "linear",
   B = 100,
   verbose = FALSE
 )
