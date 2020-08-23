@@ -5,7 +5,8 @@
 #' Perform Cross-validated Kernel Ensemble and optionally test for kernel effect
 #' based on user-specified formula.
 #'
-#' @param formula (formula) A user-supplied formula.
+#' @param formula (formula) A user-supplied formula for the null model. Should 
+#' contain at least one kernel term.
 #' @param kern_func_list (list) A list of kernel functions in the kernel library.
 #' @param data (data.frame, n*d) A data.frame, list or environment (or object
 #' coercible by as.data.frame to a data.frame), containing the variables in
@@ -20,10 +21,10 @@
 #' when strategy = "exp" \code{\link{ensemble_exp}}.
 #' @param lambda (numeric) A numeric string specifying the range of 
 #' tuning parameter to be chosen. The lower limit of lambda must be above 0.
-#' @param test (character) Type of hypothesis test to conduct.
-#' Must be either 'asymp' or 'boot'.
+#' @param test (character) Type of hypothesis test to conduct. Must be either 
+#' 'asymp' or 'boot'.
 #' @param alt_kernel_type (character) Type of alternative kernel effect to consider.
-#' Must be either 'linear' or 'ensemble'
+#' Must be either 'linear' or 'ensemble'.
 #' @param B (numeric) Number of bootstrap samples.
 #' @param verbose (logical) Whether to print additional messages.
 #' 
@@ -183,7 +184,7 @@ cvek <- function(formula,
 #' coercible by as.data.frame to a data.frame), containing the variables in
 #' formula. Neither a matrix nor an array will be accepted.
 #' @param test (character) Type of hypothesis test to conduct.
-#' Must be eitehr 'asymp' or 'boot'.
+#' Must be either 'asymp' or 'boot'.
 #' @param alt_kernel_type (character) Type of alternative kernel effect to consider.
 #' Must be either 'linear' or 'ensemble'
 #' @param B (integer) A numeric value indicating times of resampling when test

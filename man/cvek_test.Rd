@@ -28,7 +28,7 @@ coercible by as.data.frame to a data.frame), containing the variables in
 formula. Neither a matrix nor an array will be accepted.}
 
 \item{test}{(character) Type of hypothesis test to conduct.
-Must be eitehr 'asymp' or 'boot'.}
+Must be either 'asymp' or 'boot'.}
 
 \item{alt_kernel_type}{(character) Type of alternative kernel effect to consider.
 Must be either 'linear' or 'ensemble'}

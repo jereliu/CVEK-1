@@ -20,7 +20,8 @@ cvek(
 )
 }
 \arguments{
-\item{formula}{(formula) A user-supplied formula.}
+\item{formula}{(formula) A user-supplied formula for the null model. Should 
+contain at least one kernel term.}
 
 \item{kern_func_list}{(list) A list of kernel functions in the kernel library.}
 
@@ -43,11 +44,11 @@ when strategy = "exp" \code{\link{ensemble_exp}}.}
 \item{lambda}{(numeric) A numeric string specifying the range of 
 tuning parameter to be chosen. The lower limit of lambda must be above 0.}
 
-\item{test}{(character) Type of hypothesis test to conduct.
-Must be either 'asymp' or 'boot'.}
+\item{test}{(character) Type of hypothesis test to conduct. Must be either 
+'asymp' or 'boot'.}
 
 \item{alt_kernel_type}{(character) Type of alternative kernel effect to consider.
-Must be either 'linear' or 'ensemble'}
+Must be either 'linear' or 'ensemble'.}
 
 \item{B}{(numeric) Number of bootstrap samples.}
 
