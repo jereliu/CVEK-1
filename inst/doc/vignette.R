@@ -82,15 +82,18 @@ data_test_pred <- cbind(y_pred, data_test)
 ## ---- echo=FALSE, results='asis'----------------------------------------------
 knitr::kable(head(data_test_pred, 5))
 
+## ---- fig.width=14, fig.height=3----------------------------------------------
+knitr::include_graphics("table2.pdf", auto_pdf = TRUE)
+
 ## -----------------------------------------------------------------------------
-kern_par <- data.frame(method = c("linear", "polynomial", "rbf"), 
-                       l = rep(1, 3), p = 1:3, stringsAsFactors = FALSE)
+kern_par <- data.frame(method = c("linear", "rbf"), 
+                       l = rep(1, 2), p = 1:2, stringsAsFactors = FALSE)
 # define kernel library
 kern_func_list <- define_library(kern_par)
 
-formula <- Employed ~ Population + k(Armed.Forces, Population)
-formula_test <- Employed ~ k(Armed.Forces):k(Population)
-fit_longley <- cvek(formula, kern_func_list = kern_func_list, data = longley, 
-                    formula_test = formula_test)
-fit_longley$pvalue
+formula <- medv ~ rm + k(crim, lstat)
+formula_test <- medv ~ k(crim):k(lstat)
+fit_bos<- cvek(formula, kern_func_list = kern_func_list, data = Boston, 
+                    formula_test = formula_test, test = "asymp")
+fit_bos$pvalue
 
