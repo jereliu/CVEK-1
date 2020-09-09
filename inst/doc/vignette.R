@@ -7,6 +7,8 @@ knitr::opts_chunk$set(
 ## ---- message = FALSE---------------------------------------------------------
 # devtools::install_github("IrisTeng/CVEK-1")
 library(CVEK)
+library(ggplot2)
+library(ggrepel)
 
 ## -----------------------------------------------------------------------------
 set.seed(0726)
@@ -61,7 +63,8 @@ kern_func_list <- define_library(kern_par)
 formula <- y ~ z1 + z2 + k(z3, z4)
 
 ## -----------------------------------------------------------------------------
-est_res <- cvek(formula, kern_func_list = kern_func_list, data = data_train)
+est_res <- cvek(formula, kern_func_list = kern_func_list, 
+                data = data_train)
 est_res$lambda
 est_res$u_hat
 
@@ -87,13 +90,97 @@ knitr::include_graphics("table2.pdf", auto_pdf = TRUE)
 
 ## -----------------------------------------------------------------------------
 kern_par <- data.frame(method = c("linear", "rbf"), 
-                       l = rep(1, 2), p = 1:2, stringsAsFactors = FALSE)
+                       l = rep(1, 2), p = 1:2, 
+                       stringsAsFactors = FALSE)
 # define kernel library
 kern_func_list <- define_library(kern_par)
 
-formula <- medv ~ rm + k(crim, lstat)
+## -----------------------------------------------------------------------------
+formula <- medv ~ zn + indus + chas + nox + rm + age + dis + 
+  rad + tax + ptratio + black + k(crim) + k(lstat)
 formula_test <- medv ~ k(crim):k(lstat)
-fit_bos<- cvek(formula, kern_func_list = kern_func_list, data = Boston, 
-                    formula_test = formula_test, test = "asymp")
+fit_bos <- cvek(formula, kern_func_list = kern_func_list, data = Boston, 
+                formula_test = formula_test, 
+                lambda = exp(seq(-3, 5)), test = "asymp")
 fit_bos$pvalue
+
+## ----message=FALSE------------------------------------------------------------
+# first fit the alternative model
+formula_alt <- medv ~ zn + indus + chas + nox + rm + age + dis + 
+  rad + tax + ptratio + black + k(crim):k(lstat)
+fit_bos_alt <- cvek(formula = formula_alt, kern_func_list = kern_func_list, 
+                    data = Boston, lambda = exp(seq(-3, 5)))
+
+# mean-center all confounding variables not involved in the interaction 
+# so that the predicted values are more easily interpreted
+pred_name <- c("zn", "indus", "chas", "nox", "rm", "age", 
+               "dis", "rad", "tax", "ptratio", "black")
+covar_mean <- apply(Boston, 2, mean)
+pred_cov <- covar_mean[pred_name]
+pred_cov_df <- t(as.data.frame(pred_cov))
+lstat_list <- seq(12.5, 17.5, length.out = 100)
+crim_quantiles <- quantile(Boston$crim, probs = c(.05, .25, .5, .75, .95))
+
+# crim is set to its 5% quantile
+data_test1 <- data.frame(pred_cov_df, lstat = lstat_list, 
+                             crim = crim_quantiles[1])
+data_test1_pred <- predict(fit_bos_alt, data_test1)
+
+# crim is set to its 25% quantile
+data_test2 <- data.frame(pred_cov_df, lstat = lstat_list, 
+                             crim = crim_quantiles[2])
+data_test2_pred <- predict(fit_bos_alt, data_test2)
+
+# crim is set to its 50% quantile
+data_test3 <- data.frame(pred_cov_df, lstat = lstat_list, 
+                             crim = crim_quantiles[3])
+data_test3_pred <- predict(fit_bos_alt, data_test3)
+
+# crim is set to its 75% quantile
+data_test4 <- data.frame(pred_cov_df, lstat = lstat_list, 
+                             crim = crim_quantiles[4])
+data_test4_pred <- predict(fit_bos_alt, data_test4)
+
+# crim is set to its 95% quantile
+data_test5 <- data.frame(pred_cov_df, lstat = lstat_list, 
+                             crim = crim_quantiles[5])
+data_test5_pred <- predict(fit_bos_alt, data_test5)
+
+# combine five sets of prediction data together
+medv <- rbind(data_test1_pred, data_test2_pred, data_test3_pred, 
+              data_test4_pred, data_test5_pred)
+data_pred <- data.frame(lstat = rep(lstat_list, 5), medv = medv, 
+                        crim = c("5% quantile", "25% quantile", 
+                                 "50% quantile", "75% quantile", 
+                                 "95% quantile"))
+data_pred$crim <- factor(data_pred$crim, 
+                         levels = c("5% quantile", "25% quantile", 
+                                    "50% quantile", "75% quantile", 
+                                    "95% quantile"))
+
+data_label <- data_pred[which(data_pred$lstat == 17.5), ]
+data_label$value <- c("0.028%", "0.082%", "0.257%", "3.677%", "15.789%")
+data_label$value <- factor(data_label$value, levels = 
+                             c("0.028%", "0.082%", "0.257%", 
+                               "3.677%", "15.789%"))
+    
+ggplot(data = data_pred, aes(x = lstat, y = medv, color = crim)) + 
+  geom_point(size = 0.1) + 
+  geom_text_repel(aes(label = value), data = data_label, 
+                  color = "black", size = 3.6) + 
+    scale_colour_manual(values = c("firebrick1", "chocolate2", 
+                                   "darkolivegreen3", "skyblue2", 
+                                   "purple2")) + 
+  geom_line(col = "firebrick1", data = data_pred[1:100, ]) + 
+  geom_line(col = "chocolate2", data = data_pred[101:200, ]) + 
+  geom_line(col = "darkolivegreen3", data = data_pred[201:300, ]) + 
+  geom_line(col = "skyblue2", data = data_pred[301:400, ]) + 
+  geom_line(col = "purple2", data = data_pred[401:500, ]) + 
+  theme(panel.grid = element_blank(),
+        axis.title.x = element_text(size = 12), 
+        axis.title.y = element_text(size = 12), 
+        legend.title = element_text(size = 12, face = "bold"), 
+        legend.text = element_text(size = 12)) + 
+    labs(x = "percentage of lower status", 
+         y = "median value of owner-occupied homes ($1000)")
 

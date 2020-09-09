@@ -89,7 +89,7 @@ predict.cvek <- function(object, newdata, ...) {
       object$base_est$P_K_hat[[k]] %*% (diag(n) - H)
     P_K_star[[k]] <- B_star %*% (diag(n) - H + H %*% object$base_est$P_K_hat[[k]])
     P_X_star[[k]] <- H_star %*% (diag(n) - P_K)
-    y_pred <- y_pred + object$u_hat[k] * (P_K_star[[k]] + P_X_star[[k]]) %*% object$data$y
+    y_pred <- y_pred + object$u_hat[k] * (P_K_star[[k]] + P_X_star[[k]]) %*% object$model_matrices$y
   }
 
   y_pred
