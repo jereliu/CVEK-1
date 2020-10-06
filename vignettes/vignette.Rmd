@@ -79,7 +79,7 @@ data_test <- data[101:150, ]
 ```
 
 
-Let's see what the data looks like.
+The data look as follows.
 
 ```{r, results='asis'}
 knitr::kable(head(data_train, 5))
@@ -93,9 +93,7 @@ knitr::include_graphics("table1.pdf", auto_pdf = TRUE)
 ```
 
 
-Suppose we want our kernel library to contain three kernels: $"linear"$, $"polynomial"$ with $p=2$, and $"rbf"$ with $l=1$ (the effective parameter for $"polynomial"$ is $p$ and the effective 
-parameter for $"rbf"$ is $l$, so we can set anything to $l$ for $"polynomial"$ kernel and $p$ for
-$"rbf"$ kernel), apply *define_library*.
+Suppose we want our kernel library to contain three kernels: $"linear"$, $"polynomial"$ with $p=2$, and $"rbf"$ with $l=1$ (the effective parameter for $"polynomial"$ is $p$ and the effective parameter for $"rbf"$ is $l$, so we can set anything to $l$ for $"polynomial"$ kernel and $p$ for $"rbf"$ kernel), apply *define_library*.
 
 ```{r}
 kern_par <- data.frame(method = c("linear", "polynomial", "rbf"), 
@@ -122,16 +120,10 @@ est_res$lambda
 est_res$u_hat
 ```
 
-We can see that there are three elements in $beta$ with the first one as the intercept. More
-importantly, the ensemble weight assigns $1$ to the $"rbf"$ kernel, which is the true kernel. 
+We can see that the ensemble weight assigns $1$ to the $"rbf"$ kernel, which is the true kernel. 
 This illustrates the accuracy and efficiency of the CVEK method.
 
-Then, here comes the testing procedure. 
-
-Note that we can use the same function *cvek* as estimation to perform hypothesis testing, but we need to provide $formula\_test$, which is the user-supplied formula indicating the alternative 
-effect to test.
-
-Now, we want to conduct score test with $test="boot"$ and $B=200$ since the sample $n=100$ is small.
+Then, we specify the testing procedure. Note that we can use the same function *cvek* as estimation to perform hypothesis testing, but we need to provide $formula\_test$, which is the user-supplied formula indicating the additional alternative effect (e.g, interactions) to test for. Specifically, we will conduct a bootstrap test by specifying $test="boot"$ and the number of bootstrap samples $B=200$.
 
 ```{r}
 formula_test <- y ~ k(z1, z2):k(z3, z4)
@@ -139,15 +131,12 @@ pvalue <- cvek(formula, kern_func_list = kern_func_list,
                data = data_train, formula_test = formula_test,
                mode = "loocv", strategy = "stack",
                beta_exp = 1, lambda = exp(seq(-10, 5)),
-               test = "boot", alt_kernel_type = "linear",
+               test = "boot", alt_kernel_type = "ensemble",
                B = 200, verbose = FALSE)$pvalue
 pvalue
 ```
 
-So at the significance level $0.05$, we reject the null hypothesis that there's no interaction effect, which matches our data generation mechanism.
-
-
-Additionally, we can prediction new outcomes based on estimation result *est_res*.
+So at the significance level $0.05$, we reject the null hypothesis that there's no interaction effect, which matches our data generation mechanism. Additionally, we can prediction new outcomes based on estimation result *est_res*.
 
 ```{r}
 y_pred <- predict(est_res, data_test[, 2:5])
@@ -162,36 +151,33 @@ knitr::kable(head(data_test_pred, 5))
 
 ## Detecting Nonlinear Interaction in Boston Housing Price
 
-In this section, we show an example of using *cvek* test to detect the nonlinear interactions between socioeconomic factors that contribute to housing price in the city of Boston,  Mass, USA. We consider the *Boston* dataset that is available in the **MASS** package in R. *Boston* is  collected by the U.S Census Service about the median housing price ($medv$) in Boston, along with additional variables describing local socioeconomic information such as per capita crime rate, proportion of non-retail business, number of rooms per household, etc.
-
-We use *cvek* to study whether the per capita crime rate ($crim$) impacts the relationship between the local socioeconomic status ($lstat$) and the housing price. Table 2 lists all the $14$ variables. The following covariates are included to adjust for confounding: $zn, indus, chas, nox, rm, age, dis, rad, tax, ptratio$ and $black$, which are modeled as linear effects. 
+In this section, we show an example of using *cvek* test to detect
+nonlinear interactions between socioeconomic factors that contribute to housing price in the city of Boston,  Mass, USA. We consider the *Boston* dataset (available in the **MASS** package), which is collected by the U.S Census Service about the median housing price ($medv$) in Boston, along with additional variables describing local socioeconomic information such as per capita crime rate, proportion of non-retail business, number of rooms per household, etc. Table 2 lists all the $14$ variables. 
 
 ```{r, fig.width=14, fig.height=3}
 knitr::include_graphics("table2.pdf", auto_pdf = TRUE)
 ```
 
-The null model is,
+Here we use *cvek* to study whether the per capita crime rate ($crim$) impacts the relationship between the local socioeconomic status ($lstat$) and the housing price. The null model is,
 \begin{align*}
 medv \sim \mathbf{x}^\top \boldsymbol{\beta} + k(crim) + k(lstat),
 \end{align*}
-where $\mathbf{x}^\top=(1, zn, indus, chas, nox, rm, age, dis, rad, tax, ptratio, black)$, and $k()$ is the estimated ensemble kernel matrix, with weights estimated using *cvek*. Therefore, $k()$ is defined by the user-specified model library. Here we specify the model library as *linear* and *rbf* with $l=1$. This inclusion of nonlinearity (i.e. *rbf* kernel) is important, since these socioeconomic attributes are known to have nonlinear association with housing price in the macroeconmics literature [harrison_hedonic_1978](https://doi.org/10.1016/0095-0696(78)90006-2).
+where $\mathbf{x}^\top=(1, zn, indus, chas, nox, rm, age, dis, rad, tax, ptratio, black)$, and $k()$ is specified as a semi-parametric model with a model library that includes *linear* and *rbf* kernels with $l=1$. This inclusion of nonlinearity (i.e., the *rbf* kernel) is important, since per classic results in the macroeconmics literature, the crime rates and socioeconomic status of local community are known to have nonlinear association with the local housing price [harrison_hedonic_1978](https://doi.org/10.1016/0095-0696(78)90006-2).
 
 ```{r}
 kern_par <- data.frame(method = c("linear", "rbf"), 
-                       l = rep(1, 2), p = 1:2, 
-                       stringsAsFactors = FALSE)
+                       l = rep(1, 2), p = 1:2, stringsAsFactors = FALSE)
 # define kernel library
 kern_func_list <- define_library(kern_par)
 ```
 
-To this end, the hypothesis regarding whether $crim$ impacts the $medv - lstat$ relationship is equivalent to testing whether there exists a nonlinear interaction between $crim$ and $lstat$ in predicting $medv$, i.e.,
-
+To this end, the hypothesis regarding whether the crime rate ($crim$) impacts the association between local socioeconomic status ($lstat$) and the housing price ($medv$) is equivalent to testing whether there exists a nonlinear interaction between $crim$ and $lstat$ in predicting $medv$, i.e.,
 \begin{align*}
-\Hsc_0: &\; medv \sim \mathbf{x}^\top \boldsymbol{\beta} + k(crim) + k(lstat), \\
-\Hsc_a: &\; medv \sim \mathbf{x}^\top \boldsymbol{\beta} + k(crim) + k(lstat) + k(crim):k(lstat).
+\mathcal{H}_0: &\; medv \sim \mathbf{x}^\top \boldsymbol{\beta} + k(crim) + k(lstat), \\
+\mathcal{H}_a: &\; medv \sim \mathbf{x}^\top \boldsymbol{\beta} + k(crim) + k(lstat) + k(crim):k(lstat).
 \end{align*}
 
-In the *cvek* implementation, we specify the null model using *formula*, and specify the additional interaction term ($k(crim):k(lstat)$) in the alternative model using *formula\_test*, as shown below:
+To test this hypothesis using *cvek*, we specify the null model using *formula*, and specify the additional interaction term ($k(crim):k(lstat)$) in the alternative model using *formula\_test*, as shown below:
 
 ```{r}
 formula <- medv ~ zn + indus + chas + nox + rm + age + dis + 
@@ -200,14 +186,24 @@ formula_test <- medv ~ k(crim):k(lstat)
 fit_bos <- cvek(formula, kern_func_list = kern_func_list, data = Boston, 
                 formula_test = formula_test, 
                 lambda = exp(seq(-3, 5)), test = "asymp")
+```
+
+Given the fitted object (*fit_bos*), the p-value of the *cvek* test can be extracted as below:
+
+```{r}
 fit_bos$pvalue
 ```
 
 As shown, since $p<0.05$, we reject the null hypothesis that there's no interaction effect between $crim$ and $lstat$, and conclude that the data does seem to suggest an impact of crime rate on the relationship between local socioeconomic status and housing price.
 
-A versatile and sometimes the most interpretable method for understanding interaction effects is via plotting. 
+Since $p<0.05$, we reject the null hypothesis that there's no $crim:lstat$ interaction, and conclude that the data does suggest an impact of the crime rate on the relationship between the local socioeconomic status and the  housing price.
 
-```{r message=FALSE}
+
+## Visualizing Nonlinear Interaction in Boston Housing Price
+
+A versatile and sometimes the most intepretable method for understanding interaction effects is via plotting. Next we show the *Boston* example of how to visualize the fitted interaction from a *cvek* model. We visualize the interaction effects by creating five datasets: Fix all confounding variables to their means, vary $lstat$ in a reasonable range (i.e., from $12.5$ to $17.5$, since the original range of $lstat$ in *Boston* dataset is $(1.73, 37.97)$), and respectively set $crim$ value to its $5\%, 25\%, 50\%, 75\%$ and $95\%$ quantiles.
+
+```{r message=FALSE, fig.width=7, fig.height=5}
 # first fit the alternative model
 formula_alt <- medv ~ zn + indus + chas + nox + rm + age + dis + 
   rad + tax + ptratio + black + k(crim):k(lstat)
@@ -279,28 +275,29 @@ ggplot(data = data_pred, aes(x = lstat, y = medv, color = crim)) +
   geom_line(col = "darkolivegreen3", data = data_pred[201:300, ]) + 
   geom_line(col = "skyblue2", data = data_pred[301:400, ]) + 
   geom_line(col = "purple2", data = data_pred[401:500, ]) + 
+  theme_set(theme_bw()) +
   theme(panel.grid = element_blank(),
         axis.title.x = element_text(size = 12), 
         axis.title.y = element_text(size = 12), 
         legend.title = element_text(size = 12, face = "bold"), 
         legend.text = element_text(size = 12)) + 
     labs(x = "percentage of lower status", 
-         y = "median value of owner-occupied homes ($1000)")
+         y = "median value of owner-occupied homes ($1000)", 
+         col = "per capita crime rate")
 ```
 
-We visualize the interaction effects by creating five datasets: Fix all confounding variables to their means, vary $lstat$ in a reasonable range (i.e., from $12.5$ to $17.5$, since the original range of $lstat$ in *Boston* dataset is $(1.73, 37.97)$), and respectively set $crim$ value to its $5\%, 25\%, 50\%, 75\%$ and $95\%$ quantiles. Numbers at the end of each curves indicate the actual values of $crim$ rate (per capita crime rate by town) at the corresponding quantiles. From the figure we see that crime rate does impact the relationship between local socioeconomic status and housing price.
-
+The figure above shows the $medv$ - $lstat$ relationship under different levels of $crim$. Numbers at the end of each curves indicate the actual values of $crim$ rate (per capita crime rate by town) at the corresponding quantiles. From the figure we see that crime rate does impact the relationship between the local socioeconomic status v.s. housing price. Building on this code, user can continue refine the visualization (e.g., by adding in confidence levels) and use it to improve the the model fit based on domain knowledge (e.g., by experimenting different kernels / hyper-parameters).
 
 ## References
 
 1.  Jeremiah Zhe Liu and Brent Coull. Robust Hypothesis Test for Nonlinear Effect       with Gaussian Processes. October 2017.
-1.  Xiang Zhan, Anna Plantinga, Ni Zhao, and Michael C. Wu. A fast small-sample         kernel inde- pendence test for microbiome community-level association analysis.     December 2017.
+1.  Xiang Zhan, Anna Plantinga, Ni Zhao, and Michael C. Wu. A fast small-sample         kernel independence test for microbiome community-level association analysis.     December 2017.
 1.  Arnak S. Dalalyan and Alexandre B. Tsybakov. Aggregation by Exponential             Weighting and Sharp Oracle Inequalities. In Learning Theory, Lecture Notes in       Computer Science, pages 97– 111. Springer, Berlin, Heidelberg, June 2007.
 1.  Arnab Maity and Xihong Lin. Powerful tests for detecting a gene effect in the       presence of possible gene-gene interactions using garrote kernel machines.          December 2011.
 1.  The MIT Press. Gaussian Processes for Machine Learning, 2006.
 1.  Xihong Lin. Variance component testing in generalised linear models with random     effects. June 1997.
 1.  Philip S. Boonstra, Bhramar Mukherjee, and Jeremy M. G. Taylor. A Small-Sample      Choice of the Tuning Parameter in Ridge Regression. July 2015.
 1.  Trevor Hastie, Robert Tibshirani, and Jerome Friedman. The Elements of              Statistical Learning: Data Mining, Inference, and Prediction, Second Edition.       Springer Series in Statistics. Springer- Verlag, New York, 2 edition, 2009.
-1.  Hirotogu Akaike. Information Theory and an Extension of the Maximum Likelihood      Princi- ple. In Selected Papers of Hirotugu Akaike, Springer Series in              Statistics, pages 199–213. Springer, New York, NY, 1998.
+1.  Hirotogu Akaike. Information Theory and an Extension of the Maximum Likelihood      Principle. In Selected Papers of Hirotugu Akaike, Springer Series in              Statistics, pages 199–213. Springer, New York, NY, 1998.
 1.  Clifford M. Hurvich and Chih-Ling Tsai. Regression and time series model            selection in small samples. June 1989.
 1.  Hurvich Clifford M., Simonoff Jeffrey S., and Tsai Chih-Ling. Smoothing             parameter selection in nonparametric regression using an improved Akaike            information criterion. January 2002.

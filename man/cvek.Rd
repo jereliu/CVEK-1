@@ -48,7 +48,7 @@ tuning parameter to be chosen. The lower limit of lambda must be above 0.}
 'asymp' or 'boot'.}
 
 \item{alt_kernel_type}{(character) Type of alternative kernel effect to consider.
-Must be either 'linear' or 'ensemble'.}
+Must be either "linear" or "ensemble".}
 
 \item{B}{(numeric) Number of bootstrap samples.}
 

@@ -74,7 +74,7 @@ pvalue <- cvek(formula, kern_func_list = kern_func_list,
                data = data_train, formula_test = formula_test,
                mode = "loocv", strategy = "stack",
                beta_exp = 1, lambda = exp(seq(-10, 5)),
-               test = "boot", alt_kernel_type = "linear",
+               test = "boot", alt_kernel_type = "ensemble",
                B = 200, verbose = FALSE)$pvalue
 pvalue
 
@@ -90,8 +90,7 @@ knitr::include_graphics("table2.pdf", auto_pdf = TRUE)
 
 ## -----------------------------------------------------------------------------
 kern_par <- data.frame(method = c("linear", "rbf"), 
-                       l = rep(1, 2), p = 1:2, 
-                       stringsAsFactors = FALSE)
+                       l = rep(1, 2), p = 1:2, stringsAsFactors = FALSE)
 # define kernel library
 kern_func_list <- define_library(kern_par)
 
@@ -102,9 +101,11 @@ formula_test <- medv ~ k(crim):k(lstat)
 fit_bos <- cvek(formula, kern_func_list = kern_func_list, data = Boston, 
                 formula_test = formula_test, 
                 lambda = exp(seq(-3, 5)), test = "asymp")
+
+## -----------------------------------------------------------------------------
 fit_bos$pvalue
 
-## ----message=FALSE------------------------------------------------------------
+## ----message=FALSE, fig.width=7, fig.height=5---------------------------------
 # first fit the alternative model
 formula_alt <- medv ~ zn + indus + chas + nox + rm + age + dis + 
   rad + tax + ptratio + black + k(crim):k(lstat)
@@ -176,11 +177,13 @@ ggplot(data = data_pred, aes(x = lstat, y = medv, color = crim)) +
   geom_line(col = "darkolivegreen3", data = data_pred[201:300, ]) + 
   geom_line(col = "skyblue2", data = data_pred[301:400, ]) + 
   geom_line(col = "purple2", data = data_pred[401:500, ]) + 
+  theme_set(theme_bw()) +
   theme(panel.grid = element_blank(),
         axis.title.x = element_text(size = 12), 
         axis.title.y = element_text(size = 12), 
         legend.title = element_text(size = 12, face = "bold"), 
         legend.text = element_text(size = 12)) + 
     labs(x = "percentage of lower status", 
-         y = "median value of owner-occupied homes ($1000)")
+         y = "median value of owner-occupied homes ($1000)", 
+         col = "per capita crime rate")
 
