@@ -123,20 +123,27 @@ est_res$u_hat
 We can see that the ensemble weight assigns $1$ to the $"rbf"$ kernel, which is the true kernel. 
 This illustrates the accuracy and efficiency of the CVEK method.
 
-Then, we specify the testing procedure. Note that we can use the same function *cvek* as estimation to perform hypothesis testing, but we need to provide $formula\_test$, which is the user-supplied formula indicating the additional alternative effect (e.g, interactions) to test for. Specifically, we will conduct a bootstrap test by specifying $test="boot"$ and the number of bootstrap samples $B=200$.
+Then, we specify the testing procedure. Note that we can use the same function *cvek* as estimation to perform hypothesis testing, but we need to provide $formula\_test$, which is the user-supplied formula indicating the additional alternative effect (e.g, interactions) to test for. Specifically, we will first show how to conduct the classic score test by specifying $test="asymp"$ and then a bootstrap test by specifying $test="boot"$ and the number of bootstrap samples $B=200$.
 
 ```{r}
 formula_test <- y ~ k(z1, z2):k(z3, z4)
-pvalue <- cvek(formula, kern_func_list = kern_func_list, 
-               data = data_train, formula_test = formula_test,
-               mode = "loocv", strategy = "stack",
-               beta_exp = 1, lambda = exp(seq(-10, 5)),
-               test = "boot", alt_kernel_type = "ensemble",
-               B = 200, verbose = FALSE)$pvalue
-pvalue
+
+cvek(formula, kern_func_list = kern_func_list, 
+     data = data_train, formula_test = formula_test,
+     mode = "loocv", strategy = "stack",
+     beta_exp = 1, lambda = exp(seq(-10, 5)),
+     test = "asymp", alt_kernel_type = "ensemble",
+     verbose = FALSE)$pvalue
+
+cvek(formula, kern_func_list = kern_func_list, 
+     data = data_train, formula_test = formula_test,
+     mode = "loocv", strategy = "stack",
+     beta_exp = 1, lambda = exp(seq(-10, 5)),
+     test = "boot", alt_kernel_type = "ensemble",
+     B = 200, verbose = FALSE)$pvalue
 ```
 
-So at the significance level $0.05$, we reject the null hypothesis that there's no interaction effect, which matches our data generation mechanism. Additionally, we can prediction new outcomes based on estimation result *est_res*.
+Both tests come to the same conclusion. At the significance level $0.05$, we reject the null hypothesis that there's no interaction effect, which matches our data generation mechanism. Additionally, we can prediction new outcomes based on estimation result *est_res*.
 
 ```{r}
 y_pred <- predict(est_res, data_test[, 2:5])

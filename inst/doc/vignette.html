@@ -12,7 +12,7 @@
 
 <meta name="author" content="Wenying Deng" />
 
-<meta name="date" content="2020-10-06" />
+<meta name="date" content="2020-10-08" />
 
 <title>Using the CVEK R package</title>
 
@@ -301,7 +301,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Using the CVEK R package</h1>
 <h4 class="author">Wenying Deng</h4>
-<h4 class="date">2020-10-06</h4>
+<h4 class="date">2020-10-08</h4>
 
 
 
@@ -430,17 +430,26 @@ y_i=h_1(\mathbf{x}_{i, 1})+h_2(\mathbf{x}_{i, 2})+0.2 * h_{12}(\mathbf{x}_{i, 1}
 <a class="sourceLine" id="cb7-5" data-line-number="5">est_res<span class="op">$</span>u_hat</a>
 <a class="sourceLine" id="cb7-6" data-line-number="6"><span class="co">#&gt; [1] 0 0 1</span></a></code></pre></div>
 <p>We can see that the ensemble weight assigns <span class="math inline">\(1\)</span> to the <span class="math inline">\(&quot;rbf&quot;\)</span> kernel, which is the true kernel. This illustrates the accuracy and efficiency of the CVEK method.</p>
-<p>Then, we specify the testing procedure. Note that we can use the same function <em>cvek</em> as estimation to perform hypothesis testing, but we need to provide <span class="math inline">\(formula\_test\)</span>, which is the user-supplied formula indicating the additional alternative effect (e.g, interactions) to test for. Specifically, we will conduct a bootstrap test by specifying <span class="math inline">\(test=&quot;boot&quot;\)</span> and the number of bootstrap samples <span class="math inline">\(B=200\)</span>.</p>
+<p>Then, we specify the testing procedure. Note that we can use the same function <em>cvek</em> as estimation to perform hypothesis testing, but we need to provide <span class="math inline">\(formula\_test\)</span>, which is the user-supplied formula indicating the additional alternative effect (e.g, interactions) to test for. Specifically, we will first show how to conduct the classic score test by specifying <span class="math inline">\(test=&quot;asymp&quot;\)</span> and then a bootstrap test by specifying <span class="math inline">\(test=&quot;boot&quot;\)</span> and the number of bootstrap samples <span class="math inline">\(B=200\)</span>.</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1">formula_test &lt;-<span class="st"> </span>y <span class="op">~</span><span class="st"> </span><span class="kw">k</span>(z1, z2)<span class="op">:</span><span class="kw">k</span>(z3, z4)</a>
-<a class="sourceLine" id="cb8-2" data-line-number="2">pvalue &lt;-<span class="st"> </span><span class="kw">cvek</span>(formula, <span class="dt">kern_func_list =</span> kern_func_list, </a>
-<a class="sourceLine" id="cb8-3" data-line-number="3">               <span class="dt">data =</span> data_train, <span class="dt">formula_test =</span> formula_test,</a>
-<a class="sourceLine" id="cb8-4" data-line-number="4">               <span class="dt">mode =</span> <span class="st">&quot;loocv&quot;</span>, <span class="dt">strategy =</span> <span class="st">&quot;stack&quot;</span>,</a>
-<a class="sourceLine" id="cb8-5" data-line-number="5">               <span class="dt">beta_exp =</span> <span class="dv">1</span>, <span class="dt">lambda =</span> <span class="kw">exp</span>(<span class="kw">seq</span>(<span class="op">-</span><span class="dv">10</span>, <span class="dv">5</span>)),</a>
-<a class="sourceLine" id="cb8-6" data-line-number="6">               <span class="dt">test =</span> <span class="st">&quot;boot&quot;</span>, <span class="dt">alt_kernel_type =</span> <span class="st">&quot;ensemble&quot;</span>,</a>
-<a class="sourceLine" id="cb8-7" data-line-number="7">               <span class="dt">B =</span> <span class="dv">200</span>, <span class="dt">verbose =</span> <span class="ot">FALSE</span>)<span class="op">$</span>pvalue</a>
-<a class="sourceLine" id="cb8-8" data-line-number="8">pvalue</a>
-<a class="sourceLine" id="cb8-9" data-line-number="9"><span class="co">#&gt; [1] 0</span></a></code></pre></div>
-<p>So at the significance level <span class="math inline">\(0.05\)</span>, we reject the null hypothesis that there’s no interaction effect, which matches our data generation mechanism. Additionally, we can prediction new outcomes based on estimation result <em>est_res</em>.</p>
+<a class="sourceLine" id="cb8-2" data-line-number="2"></a>
+<a class="sourceLine" id="cb8-3" data-line-number="3"><span class="kw">cvek</span>(formula, <span class="dt">kern_func_list =</span> kern_func_list, </a>
+<a class="sourceLine" id="cb8-4" data-line-number="4">     <span class="dt">data =</span> data_train, <span class="dt">formula_test =</span> formula_test,</a>
+<a class="sourceLine" id="cb8-5" data-line-number="5">     <span class="dt">mode =</span> <span class="st">&quot;loocv&quot;</span>, <span class="dt">strategy =</span> <span class="st">&quot;stack&quot;</span>,</a>
+<a class="sourceLine" id="cb8-6" data-line-number="6">     <span class="dt">beta_exp =</span> <span class="dv">1</span>, <span class="dt">lambda =</span> <span class="kw">exp</span>(<span class="kw">seq</span>(<span class="op">-</span><span class="dv">10</span>, <span class="dv">5</span>)),</a>
+<a class="sourceLine" id="cb8-7" data-line-number="7">     <span class="dt">test =</span> <span class="st">&quot;asymp&quot;</span>, <span class="dt">alt_kernel_type =</span> <span class="st">&quot;ensemble&quot;</span>,</a>
+<a class="sourceLine" id="cb8-8" data-line-number="8">     <span class="dt">verbose =</span> <span class="ot">FALSE</span>)<span class="op">$</span>pvalue</a>
+<a class="sourceLine" id="cb8-9" data-line-number="9"><span class="co">#&gt;      [,1]</span></a>
+<a class="sourceLine" id="cb8-10" data-line-number="10"><span class="co">#&gt; [1,]    0</span></a>
+<a class="sourceLine" id="cb8-11" data-line-number="11"></a>
+<a class="sourceLine" id="cb8-12" data-line-number="12"><span class="kw">cvek</span>(formula, <span class="dt">kern_func_list =</span> kern_func_list, </a>
+<a class="sourceLine" id="cb8-13" data-line-number="13">     <span class="dt">data =</span> data_train, <span class="dt">formula_test =</span> formula_test,</a>
+<a class="sourceLine" id="cb8-14" data-line-number="14">     <span class="dt">mode =</span> <span class="st">&quot;loocv&quot;</span>, <span class="dt">strategy =</span> <span class="st">&quot;stack&quot;</span>,</a>
+<a class="sourceLine" id="cb8-15" data-line-number="15">     <span class="dt">beta_exp =</span> <span class="dv">1</span>, <span class="dt">lambda =</span> <span class="kw">exp</span>(<span class="kw">seq</span>(<span class="op">-</span><span class="dv">10</span>, <span class="dv">5</span>)),</a>
+<a class="sourceLine" id="cb8-16" data-line-number="16">     <span class="dt">test =</span> <span class="st">&quot;boot&quot;</span>, <span class="dt">alt_kernel_type =</span> <span class="st">&quot;ensemble&quot;</span>,</a>
+<a class="sourceLine" id="cb8-17" data-line-number="17">     <span class="dt">B =</span> <span class="dv">200</span>, <span class="dt">verbose =</span> <span class="ot">FALSE</span>)<span class="op">$</span>pvalue</a>
+<a class="sourceLine" id="cb8-18" data-line-number="18"><span class="co">#&gt; [1] 0</span></a></code></pre></div>
+<p>Both tests come to the same conclusion. At the significance level <span class="math inline">\(0.05\)</span>, we reject the null hypothesis that there’s no interaction effect, which matches our data generation mechanism. Additionally, we can prediction new outcomes based on estimation result <em>est_res</em>.</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" data-line-number="1">y_pred &lt;-<span class="st"> </span><span class="kw">predict</span>(est_res, data_test[, <span class="dv">2</span><span class="op">:</span><span class="dv">5</span>])</a>
 <a class="sourceLine" id="cb9-2" data-line-number="2">data_test_pred &lt;-<span class="st"> </span><span class="kw">cbind</span>(y_pred, data_test)</a></code></pre></div>
 <table>

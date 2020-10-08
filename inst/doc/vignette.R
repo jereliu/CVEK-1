@@ -70,13 +70,20 @@ est_res$u_hat
 
 ## -----------------------------------------------------------------------------
 formula_test <- y ~ k(z1, z2):k(z3, z4)
-pvalue <- cvek(formula, kern_func_list = kern_func_list, 
-               data = data_train, formula_test = formula_test,
-               mode = "loocv", strategy = "stack",
-               beta_exp = 1, lambda = exp(seq(-10, 5)),
-               test = "boot", alt_kernel_type = "ensemble",
-               B = 200, verbose = FALSE)$pvalue
-pvalue
+
+cvek(formula, kern_func_list = kern_func_list, 
+     data = data_train, formula_test = formula_test,
+     mode = "loocv", strategy = "stack",
+     beta_exp = 1, lambda = exp(seq(-10, 5)),
+     test = "asymp", alt_kernel_type = "ensemble",
+     verbose = FALSE)$pvalue
+
+cvek(formula, kern_func_list = kern_func_list, 
+     data = data_train, formula_test = formula_test,
+     mode = "loocv", strategy = "stack",
+     beta_exp = 1, lambda = exp(seq(-10, 5)),
+     test = "boot", alt_kernel_type = "ensemble",
+     B = 200, verbose = FALSE)$pvalue
 
 ## -----------------------------------------------------------------------------
 y_pred <- predict(est_res, data_test[, 2:5])
