@@ -396,9 +396,13 @@ parse_cvek_formula <-
       if (!is.null(data_new)) {
         fixed_effect_data <- data_new
       }
+
+      mm <- model.frame(fixed_effect_formula, data = data)
+      xlevels <- .getXlevels(terms.formula(fixed_effect_formula), mm)
       
-      fixed_effect_matrix <-
-        model.matrix(fixed_effect_formula, data = fixed_effect_data)
+      m <- model.frame(fixed_effect_formula, data = fixed_effect_data, 
+                       xlev = xlevels)
+      fixed_effect_matrix <- model.matrix(fixed_effect_formula, data = m)
     }
     
     # produce kernel-effect matrices Ks

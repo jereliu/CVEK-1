@@ -158,9 +158,9 @@ data_test5_pred <- predict(fit_bos_alt, data_test5)
 medv <- rbind(data_test1_pred, data_test2_pred, data_test3_pred, 
               data_test4_pred, data_test5_pred)
 data_pred <- data.frame(lstat = rep(lstat_list, 5), medv = medv, 
-                        crim = c("5% quantile", "25% quantile", 
-                                 "50% quantile", "75% quantile", 
-                                 "95% quantile"))
+                        crim = rep(c("5% quantile", "25% quantile", 
+                                     "50% quantile", "75% quantile", 
+                                     "95% quantile"), each = 100))
 data_pred$crim <- factor(data_pred$crim, 
                          levels = c("5% quantile", "25% quantile", 
                                     "50% quantile", "75% quantile", 
@@ -171,7 +171,7 @@ data_label$value <- c("0.028%", "0.082%", "0.257%", "3.677%", "15.789%")
 data_label$value <- factor(data_label$value, levels = 
                              c("0.028%", "0.082%", "0.257%", 
                                "3.677%", "15.789%"))
-    
+
 ggplot(data = data_pred, aes(x = lstat, y = medv, color = crim)) + 
   geom_point(size = 0.1) + 
   geom_text_repel(aes(label = value), data = data_label, 
@@ -179,12 +179,7 @@ ggplot(data = data_pred, aes(x = lstat, y = medv, color = crim)) +
     scale_colour_manual(values = c("firebrick1", "chocolate2", 
                                    "darkolivegreen3", "skyblue2", 
                                    "purple2")) + 
-  geom_line(col = "firebrick1", data = data_pred[1:100, ]) + 
-  geom_line(col = "chocolate2", data = data_pred[101:200, ]) + 
-  geom_line(col = "darkolivegreen3", data = data_pred[201:300, ]) + 
-  geom_line(col = "skyblue2", data = data_pred[301:400, ]) + 
-  geom_line(col = "purple2", data = data_pred[401:500, ]) + 
-  theme_set(theme_bw()) +
+  geom_line() + theme_set(theme_bw()) +
   theme(panel.grid = element_blank(),
         axis.title.x = element_text(size = 12), 
         axis.title.y = element_text(size = 12), 
